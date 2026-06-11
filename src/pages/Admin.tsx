@@ -70,7 +70,7 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState<AdminTab>('analytics');
 
   // Sign-in parameters
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('ssuoshri@gmail.com');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [signingIn, setSigningIn] = useState(false);
@@ -354,7 +354,7 @@ export default function Admin() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-md space-y-6 relative z-10"
+          className="w-full max-w-sm space-y-6 relative z-10"
         >
           {/* Main Logo & Title brand header */}
           <div className="text-center space-y-4 flex flex-col items-center">
@@ -374,14 +374,14 @@ export default function Admin() {
               transition={{ delay: 0.3, duration: 0.5 }}
               className="space-y-1 text-center"
             >
-              <span className="text-[10px] tracking-[0.35em] font-bold uppercase text-muted-gold block">
-                TRUSTEE CURATOR SHIELD
+              <span className="text-[10px] tracking-[0.25em] font-sans font-bold uppercase text-muted-gold block">
+                Manager Access
               </span>
               <h1 className="text-2xl font-serif font-light tracking-wide text-zinc-900 dark:text-champagne">
-                Atelier Access Portal
+                Welcome Back
               </h1>
-              <p className="text-xs text-neutral-450 dark:text-neutral-500 max-w-xs mx-auto">
-                Authorized entry to Bhadohi loom register and custom rug designs database
+              <p className="text-xs text-neutral-500 max-w-xs mx-auto">
+                Please enter your password to open the store management dashboard.
               </p>
             </motion.div>
           </div>
@@ -391,7 +391,7 @@ export default function Admin() {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl p-8 rounded-3xl border border-sand dark:border-neutral-850 shadow-2xl space-y-5"
+            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl p-6 rounded-2xl border border-sand dark:border-neutral-850 shadow-2xl space-y-5"
           >
             {loginError && (
               <motion.div 
@@ -412,32 +412,13 @@ export default function Admin() {
                 className="space-y-1.5 text-left"
               >
                 <label className="text-xs font-sans font-bold tracking-wider text-neutral-500 dark:text-neutral-400 uppercase">
-                  Registry Email
-                </label>
-                <input 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  placeholder="ssuoshri@gmail.com"
-                  required
-                  className="w-full bg-stone-50 dark:bg-neutral-950 text-neutral-800 dark:text-stone-100 border border-sand dark:border-neutral-800 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-muted-gold dark:focus:border-champagne transition duration-300"
-                />
-              </motion.div>
-
-              <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="space-y-1.5 text-left"
-              >
-                <label className="text-xs font-sans font-bold tracking-wider text-neutral-500 dark:text-neutral-400 uppercase">
-                  Loom Security Key
+                  Password (Hint: admin@2026)
                 </label>
                 <input 
                   type="password" 
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)} 
-                  placeholder="admin@2026"
+                  placeholder="••••••••"
                   required
                   className="w-full bg-stone-50 dark:bg-neutral-950 text-neutral-800 dark:text-stone-100 border border-sand dark:border-neutral-800 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-muted-gold dark:focus:border-champagne transition duration-300"
                 />
@@ -446,7 +427,7 @@ export default function Admin() {
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
+                transition={{ delay: 0.6 }}
                 className="pt-2"
               >
                 <motion.button 
@@ -454,10 +435,10 @@ export default function Admin() {
                   whileTap={{ scale: 0.98 }}
                   type="submit" 
                   disabled={signingIn}
-                  className="w-full bg-zinc-950 dark:bg-gradient-to-r dark:from-muted-gold dark:to-amber-500 hover:bg-zinc-900 text-white dark:text-neutral-950 font-serif text-xs sm:text-sm font-bold tracking-widest uppercase py-4 rounded-xl shadow-lg transition duration-300 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full bg-zinc-950 hover:bg-black dark:bg-muted-gold text-white dark:text-neutral-950 font-sans text-xs sm:text-sm font-bold tracking-widest uppercase py-4 rounded-xl shadow-lg transition duration-300 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Lock className="h-4 w-4" />
-                  <span>{signingIn ? 'VERIFYING CREDENTIALS...' : 'AUTHORIZE REGISTRY ENTRY'}</span>
+                  <span>{signingIn ? 'Checking password...' : 'Log In'}</span>
                 </motion.button>
               </motion.div>
             </form>
@@ -466,10 +447,10 @@ export default function Admin() {
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.6 }}
-            transition={{ delay: 0.9 }}
+            transition={{ delay: 0.8 }}
             className="text-center text-[10px] text-neutral-500/80 tracking-widest uppercase"
           >
-            © Bhadohi Weaving Co. Secure Terminal
+            © Premium Rug Collection
           </motion.p>
         </motion.div>
       </div>

@@ -73,23 +73,25 @@ export default function Header() {
     window.open(url, '_blank');
   };  // Determine header transparent background conditions
   const isHome = currentPage === 'home';
-  const headerBgClass = isScrolled 
-    ? 'bg-warm-ivory/95 dark:bg-zinc-950/95 border-b border-sand/40 dark:border-neutral-900/60 shadow-sm text-graphite dark:text-stone-100'
-    : isHome 
-      ? 'bg-transparent text-white border-b border-transparent'
-      : 'bg-warm-ivory dark:bg-zinc-950 border-b border-sand/45 dark:border-neutral-900 text-graphite dark:text-stone-100';
+  const headerBgClass = theme === 'light'
+    ? 'bg-warm-ivory border-b border-sand shadow-sm text-zinc-900'
+    : isScrolled 
+      ? 'bg-zinc-950/95 border-b border-neutral-900 shadow-sm text-stone-100'
+      : isHome 
+        ? 'bg-transparent text-white border-b border-transparent'
+        : 'bg-zinc-950 border-b border-neutral-900 text-stone-100';
 
-  const linkColorClass = isScrolled
-    ? 'text-neutral-600 hover:text-muted-gold dark:text-neutral-300 dark:hover:text-champagne'
-    : isHome
-      ? 'text-white/90 hover:text-champagne'
-      : 'text-neutral-600 hover:text-muted-gold dark:text-neutral-300 dark:hover:text-champagne';
+  const linkColorClass = theme === 'light'
+    ? 'text-zinc-800 hover:text-muted-gold font-medium'
+    : isScrolled
+      ? 'text-neutral-300 hover:text-champagne'
+      : isHome
+        ? 'text-white/95 hover:text-champagne'
+        : 'text-neutral-300 hover:text-champagne';
 
-  const activeLinkClass = isScrolled
-    ? 'border-muted-gold text-muted-gold'
-    : isHome
-      ? 'border-champagne text-champagne'
-      : 'border-muted-gold text-muted-gold';
+  const activeLinkClass = theme === 'light'
+    ? 'border-muted-gold text-muted-gold font-bold'
+    : 'border-champagne text-champagne font-bold';
 
   return (
     <>
@@ -115,7 +117,7 @@ export default function Header() {
             
             {/* Logo Group */}
             <div className="flex items-center cursor-pointer py-2 focus:outline-none" onClick={() => setCurrentPage('home')}>
-              <Logo className="h-10 md:h-12" showText={true} lightMode={theme === 'light' && (isScrolled || !isHome)} />
+              <Logo className="h-10 md:h-12" showText={true} lightMode={theme === 'light'} />
             </div>
 
             {/* Desktop Navigation */}

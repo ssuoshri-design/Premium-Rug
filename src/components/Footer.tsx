@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import Logo from './Logo';
+import AdminLoginModal from './AdminLoginModal';
 import { 
   Instagram, 
   Facebook, 
@@ -17,10 +18,11 @@ import {
 } from 'lucide-react';
 
 export default function Footer() {
-  const { setCurrentPage, submitNewsletter } = useApp();
+  const { setCurrentPage, submitNewsletter, isAdminUser } = useApp();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const handleSubscribeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,13 +172,19 @@ export default function Footer() {
           <div className="text-center md:text-left font-light leading-relaxed">
             <p>© {new Date().getFullYear()} Premium Rug Collection. All rights preserved.</p>
             <div className="flex items-center justify-center md:justify-start gap-1.5 mt-0.5">
-              <p className="text-[10px] text-neutral-650">Under Weaving Trusteeship of Founder Mohd Sarik.</p>
+              <p className="text-[10px] text-neutral-650 font-sans">Under Weaving Trusteeship of Mohd Sarik.</p>
               <button 
-                onClick={() => setCurrentPage('admin')} 
-                className="opacity-15 hover:opacity-100 text-neutral-650 hover:text-champagne transition-all duration-300 cursor-pointer"
-                title="Atelier Supervisor Panel"
+                onClick={() => {
+                  if (isAdminUser) {
+                    setCurrentPage('admin');
+                  } else {
+                    setIsLoginOpen(true);
+                  }
+                }} 
+                className="opacity-25 hover:opacity-100 text-neutral-500 hover:text-champagne p-1 transition-all duration-300 cursor-pointer flex items-center justify-center rounded-full hover:bg-white/5"
+                title="Manager Access"
               >
-                <Lock className="h-2.5 w-2.5 inline" />
+                <Lock className="h-3 w-3 inline" />
               </button>
             </div>
           </div>
@@ -190,6 +198,7 @@ export default function Footer() {
         </div>
 
       </div>
+      <AdminLoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </footer>
   );
 }

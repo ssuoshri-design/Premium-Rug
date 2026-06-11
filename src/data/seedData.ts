@@ -11,7 +11,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     id: "machine-made",
     name: "Machine Made Rugs",
     description: "Precision-engineered carpets combining extreme node density, durable modern composites, and exquisite Turkish-inspired classic designs for busy high-luxury galleries.",
-    image: "https://images.unsplash.com/photo-1594498259853-6444d3e71c15?auto=format&fit=crop&q=80&w=800"
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=800"
   },
   {
     id: "modern",
@@ -29,7 +29,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     id: "geometric",
     name: "Geometric Rugs",
     description: "Perfect grid symmetries, sharp chevron patterns, and intersecting brass-colored colorblocks.",
-    image: "https://images.unsplash.com/photo-1562540000-7190aec4c22b?auto=format&fit=crop&q=80&w=800"
+    image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800"
   }
 ];
 
@@ -53,7 +53,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     priceUSD: 1850,
     images: [
       "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&q=80&w=800",
-      "https://images.unsplash.com/photo-1628592102751-ba83b02d42d6?auto=format&fit=crop&q=80&w=800"
+      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=800"
     ],
     stockStatus: "in_stock",
     shippingInfo: "Complimentary air shipping across India and USA. Secure custom crates included.",
@@ -81,8 +81,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     priceINR: 88000,
     priceUSD: 1100,
     images: [
-      "https://images.unsplash.com/photo-1594498259853-6444d3e71c15?auto=format&fit=crop&q=80&w=800",
-      "https://images.unsplash.com/photo-1518156677180-95a2893f3e9f?auto=format&fit=crop&q=80&w=800"
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?auto=format&fit=crop&q=80&w=800"
     ],
     stockStatus: "in_stock",
     shippingInfo: "Pre-treated with luxury dust guards. Ships globally within 7-10 business days.",
@@ -140,7 +140,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     priceUSD: 1200,
     images: [
       "https://images.unsplash.com/photo-1580137189272-c9379f8864fd?auto=format&fit=crop&q=80&w=800",
-      "https://images.unsplash.com/photo-1535043934128-cf0b28d52f95?auto=format&fit=crop&q=80&w=800"
+      "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=800"
     ],
     stockStatus: "low_stock",
     shippingInfo: "Includes premium rug pad to maximize underfoot rebound and zero slipping.",
@@ -168,8 +168,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     priceINR: 110000,
     priceUSD: 1400,
     images: [
-      "https://images.unsplash.com/photo-1562540000-7190aec4c22b?auto=format&fit=crop&q=80&w=800",
-      "https://images.unsplash.com/photo-1575414003591-ece8d0416c7a?auto=format&fit=crop&q=80&w=800"
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=800"
     ],
     stockStatus: "in_stock",
     shippingInfo: "Packed with dust resistant wraps. Fast shipping worldwide.",
@@ -224,13 +224,13 @@ export const SHOWCASE_PROJECTS = [
   {
     title: "The Taj President Suite",
     category: "Hotel Projects",
-    image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=800",
+    image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=800",
     description: "Intricate high-density medallion custom carpets layout for state dignitary suites."
   },
   {
     title: "Alibaug Luxury Villa",
     category: "Villa Projects",
-    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=800",
+    image: "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?auto=format&fit=crop&q=80&w=800",
     description: "Plush wool shags merging sand dunes tones with high-ceiling marble halls."
   },
   {
@@ -242,7 +242,7 @@ export const SHOWCASE_PROJECTS = [
   {
     title: "Bandra Designer Flat Duplex",
     category: "Luxury Interior Projects",
-    image: "https://images.unsplash.com/photo-1628592102751-ba83b02d42d6?auto=format&fit=crop&q=80&w=800",
+    image: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=800",
     description: "Abstract colorwash rug tying brass ornaments and custom leather chairs together."
   }
 ];
@@ -288,5 +288,21 @@ export const GLOBAL_SETTING_DEFAULT: WebsiteSetting = {
   privacyPolicy: "At Premium Rug Collection, we respect the absolute privacy of our elite patrons. Any collection of personal information (e.g. name, phone, email, project layouts/dimensions) shared via our contact sheets, custom rug requests, or newsletter registrations are encrypted and secured. We never resell or distribute patron coordinates.",
   termsConditions: "By accessing this premium gallery, you agree to patronize our authentic Bhadohi legacy designs. Prices are automatically estimated in INR (₹) for Indian traffic and USD ($) for international traffic based on standard trading values. All custom orders require a 50% weaving deposit to authorize raw material looms, with the remaining balance due upon completion before wooden box crating and air carriage.",
   seoTitle: "Premium Rug Collection | Hand Handcrafted Luxury Rugs Bhadohi",
-  seoDescription: "Exquisite hand-tufted rugs and custom luxury carpets inspired by Bhadohi's 500-year heritage. Curated by Mohd Sarik, Thane, India. Global shipping."
+  seoDescription: "Exquisite hand-tufted rugs and custom luxury carpets inspired by Bhadohi's 500-year heritage. Curated by Mohd Sarik, Thane, India. Global shipping.",
+  homepageImages: {
+    heroBg: "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&q=80&w=2000",
+    bento1: "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&q=80&w=1200",
+    bento2: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=800",
+    bento3: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=800",
+    bento4: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800",
+    heritage1: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=1200",
+    heritage2: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=700",
+    gallery1: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=700",
+    gallery2: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=700",
+    gallery3: "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?auto=format&fit=crop&q=80&w=700",
+    gallery4: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=700",
+    gallery5: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=700",
+    gallery6: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=700",
+    consultation: "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&q=80&w=900"
+  }
 };

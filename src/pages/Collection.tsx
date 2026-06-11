@@ -8,7 +8,9 @@ import {
   Grid3X3,
   SlidersHorizontal,
   X,
-  Search
+  Search,
+  ShoppingCart,
+  Star
 } from 'lucide-react';
 import { Product } from '../types';
 
@@ -337,7 +339,7 @@ export default function Collection() {
                   return (
                     <div 
                       key={p.id} 
-                      className="group bg-white border border-sand/30 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl duration-500 flex flex-col justify-between"
+                      className="group bg-white dark:bg-neutral-900 border border-sand/30 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl duration-500 flex flex-col justify-between"
                     >
                       <div className="relative overflow-hidden aspect-[4/3] bg-zinc-900 cursor-pointer" onClick={() => { setSelectedProductId(p.id); setCurrentPage('product-details'); }}>
                         <img 
@@ -346,51 +348,104 @@ export default function Collection() {
                           className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
                         />
                         {p.isFeatured && (
-                          <span className="absolute top-3 left-3 bg-zinc-950/85 border border-white/5 text-champagne font-sans text-[8px] uppercase tracking-widest font-bold py-1.5 px-3 rounded-full">
-                            Exquisite
-                          </span>
+                          <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                            <span className="bg-zinc-950/90 backdrop-blur-md text-champagne border border-white/10 font-sans text-[8px] uppercase tracking-widest font-bold py-1.5 px-3 rounded-full">
+                              Exquisite
+                            </span>
+                            <span className="bg-amber-400 text-neutral-950 font-sans text-[8px] font-bold uppercase tracking-wider py-0.5 px-2.5 rounded-full shadow-sm">
+                              Save 20%
+                            </span>
+                          </div>
                         )}
-                        <span className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm text-zinc-800 font-sans font-semibold text-[9px] py-1 px-3 rounded-full shadow-sm">
+                        <span className="absolute bottom-3 right-3 bg-white/95 text-zinc-900 font-sans font-bold text-[9px] py-1 px-3 rounded-full shadow-sm">
                           {p.category === 'machine-made' ? 'Machine Made' : 'Hand Knotted'}
                         </span>
                       </div>
 
                       <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
-                        <div className="space-y-2 text-left">
-                          <p className="text-[9px] font-sans font-light tracking-widest text-neutral-400 uppercase">SKU: {p.sku}</p>
-                          <h3 className="font-serif text-lg font-medium text-zinc-950 group-hover:text-muted-gold transition duration-300 cursor-pointer" onClick={() => { setSelectedProductId(p.id); setCurrentPage('product-details'); }}>
-                            {p.name}
-                          </h3>
-                          <p className="text-xs text-neutral-500 font-serif line-clamp-2 leading-relaxed italic pr-1">
-                            {p.description}
-                          </p>
+                        <div className="space-y-4 text-left">
+                          <div className="flex justify-between items-center">
+                            <p className="text-[9px] font-sans font-semibold tracking-wider text-neutral-450 dark:text-neutral-500 uppercase">SKU: {p.sku}</p>
+                            <div className="flex items-center gap-0.5 text-amber-500 font-sans text-[10px] font-bold">
+                              <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                              <span>5.0</span>
+                            </div>
+                          </div>
                           
-                          <div className="pt-2 text-left">
-                            <span className="text-[9px] text-neutral-450 uppercase font-sans tracking-wide font-semibold block">Loom Sizes:</span>
-                            <span className="text-[11px] text-zinc-800 font-serif italic block mt-0.5 leading-snug">
+                          <div className="space-y-1">
+                            <h3 className="font-serif text-lg font-medium text-zinc-950 dark:text-stone-100 group-hover:text-muted-gold dark:group-hover:text-champagne transition duration-300 cursor-pointer" onClick={() => { setSelectedProductId(p.id); setCurrentPage('product-details'); }}>
+                              {p.name}
+                            </h3>
+                            <p className="text-neutral-500 dark:text-stone-300 font-serif text-xs line-clamp-2 leading-relaxed italic pr-1">
+                              {p.description}
+                            </p>
+                          </div>
+                          
+                          <div className="text-[10px] font-sans tracking-wide text-neutral-450 dark:text-stone-400 font-normal flex items-center justify-between">
+                            <div>
+                               <span className="text-[9px] text-neutral-400 uppercase font-sans tracking-wide block font-semibold">Weaving Material</span>
+                               <span className="text-zinc-800 dark:text-champagne font-serif italic text-xs block mt-0.5">{p.material}</span>
+                            </div>
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold uppercase text-[9px] tracking-wider">✓ IN STOCK</span>
+                          </div>
+
+                          <div className="pt-1 text-left">
+                            <span className="text-[9px] text-neutral-400 uppercase font-sans tracking-wide font-semibold block">Available Sizes:</span>
+                            <span className="text-[10px] text-zinc-600 dark:text-stone-400 font-serif italic block mt-0.5 leading-snug">
                               {p.sizes.join(' • ')}
                             </span>
                           </div>
                         </div>
 
-                        <div className="pt-4 mt-6 border-t border-sand/40 flex justify-between items-center">
-                          <span className="font-serif text-base font-bold text-muted-gold">
-                            {symbol} {price.toLocaleString()}
-                          </span>
+                        <div className="pt-4 mt-6 border-t border-sand/40 dark:border-neutral-800 flex justify-between items-center">
+                          <div className="flex flex-col">
+                            <span className="text-[9px] uppercase tracking-wide font-sans text-neutral-400 dark:text-neutral-500 font-semibold mb-0.5">Value Rate</span>
+                            <div className="flex items-baseline gap-1.5 leading-none">
+                              <span className="font-sans text-base font-bold text-neutral-900 dark:text-stone-100">
+                                {symbol} {price.toLocaleString()}
+                              </span>
+                              <span className="font-sans text-[11px] text-neutral-400 line-through">
+                                {symbol} {Math.round(price * 1.25).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+
                           <div className="flex gap-2">
                             <button 
-                              onClick={() => { setSelectedProductId(p.id); setCurrentPage('product-details'); }}
-                              className="text-[9px] font-sans tracking-widest font-bold uppercase bg-zinc-950 hover:bg-muted-gold text-white hover:text-white py-2.5 px-4 rounded-full transition shadow-sm"
+                              onClick={() => {
+                                addToCart(p, 1, p.sizes[0], 'Default Color');
+                                const btn = document.getElementById(`coll-add-btn-${p.id}`);
+                                if (btn) {
+                                  const originalText = btn.innerHTML;
+                                  btn.innerHTML = "Added!";
+                                  btn.className = btn.className.replace('bg-zinc-950', 'bg-emerald-600');
+                                  setTimeout(() => {
+                                    btn.innerHTML = originalText;
+                                    btn.className = btn.className.replace('bg-emerald-600', 'bg-zinc-950');
+                                  }, 1500);
+                                }
+                              }}
+                              id={`coll-add-btn-${p.id}`}
+                              className="bg-zinc-950 hover:bg-muted-gold text-white text-[10px] font-sans font-bold tracking-widest uppercase px-4 py-3 rounded-full transition-all duration-300 cursor-pointer flex items-center gap-1"
+                              title="Instant add to selection bag"
                             >
-                              Explore
+                              <ShoppingCart className="h-3 w-3" />
+                              <span>Add to bag</span>
+                            </button>
+
+                            <button 
+                              onClick={() => { setSelectedProductId(p.id); setCurrentPage('product-details'); }}
+                              className="text-[10px] text-zinc-900 dark:text-stone-200 border border-sand hover:border-zinc-950 dark:hover:border-white px-3 py-2 rounded-full transition"
+                            >
+                              Details
                             </button>
                             
                             <button 
                               onClick={() => handleProductWhatsAppClick(p)}
-                              className="h-9 w-9 rounded-full border border-sand hover:border-muted-gold flex items-center justify-center text-zinc-700 hover:text-muted-gold hover:bg-soft-beige transition-all duration-300"
+                              className="h-9 w-9 rounded-full border border-sand hover:border-muted-gold flex items-center justify-center text-zinc-700 hover:text-muted-gold hover:bg-soft-beige transition-all duration-300 cursor-pointer"
                               title="WhatsApp Quick Consultation"
                             >
-                              <MessageCircle className="h-4.5 w-4.5" />
+                              <MessageCircle className="h-4 w-4" />
                             </button>
                           </div>
                         </div>

@@ -272,10 +272,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setIsFirebaseLoading(true);
 
+    const sanitizeUrl = (url: string | undefined): string => {
+      if (!url) return '';
+      const REPLACEMENTS: Record<string, string> = {
+        "photo-1594498259853-6444d3e71c15": "photo-1600607687939-ce8a6c25118c",
+        "photo-1590490360182-c33d57733427": "photo-1616486338812-3dadae4b4ace",
+        "photo-1613490493576-7fde63acd811": "photo-1618219908412-a29a1bb7b86e",
+        "photo-1628592102751-ba83b02d42d6": "photo-1583847268964-b28dc8f51f92",
+        "photo-1575414003591-ece8d0416c7a": "photo-1586023492125-27b2c045efd7",
+        "photo-1535043934128-cf0b28d52f95": "photo-1600607687939-ce8a6c25118c",
+        "photo-1518156677180-95a2893f3e9f": "photo-1513694203232-719a280e022f",
+        "photo-1562540000-7190aec4c22b": "photo-1586023492125-27b2c045efd7"
+      };
+
+      for (const [badId, goodId] of Object.entries(REPLACEMENTS)) {
+        if (url.includes(badId)) {
+          return url.replace(badId, goodId);
+        }
+      }
+      return url;
+    };
+
     // Watch website settings
     const settingsSub = onSnapshot(doc(db, 'website_settings', 'default_config'), (snapshot) => {
       if (snapshot.exists()) {
-        setSettings(snapshot.data() as WebsiteSetting);
+        const rawSettings = snapshot.data() as WebsiteSetting;
+        if (rawSettings.homepageImages) {
+          const sanitizedImages: Record<string, string> = {};
+          for (const [k, v] of Object.entries(rawSettings.homepageImages)) {
+            sanitizedImages[k] = sanitizeUrl(v);
+          }
+          rawSettings.homepageImages = sanitizedImages;
+        }
+        setSettings(rawSettings);
       }
     }, (error) => {
       console.warn("Using offline brand definitions. Error: ", error.message);
@@ -285,7 +314,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const categoriesSub = onSnapshot(collection(db, 'categories'), (snapshot) => {
       if (!snapshot.empty) {
         const list: Category[] = [];
-        snapshot.forEach(doc => list.push(doc.data() as Category));
+        snapshot.forEach(doc => {
+          const cat = doc.data() as Category;
+          if (cat.image) {
+            cat.image = sanitizeUrl(cat.image);
+          }
+          list.push(cat);
+        });
         setCategories(list);
       }
     }, (error) => {
@@ -296,7 +331,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const productsSub = onSnapshot(collection(db, 'products'), (snapshot) => {
       if (!snapshot.empty) {
         const list: Product[] = [];
-        snapshot.forEach(doc => list.push(doc.data() as Product));
+        snapshot.forEach(doc => {
+          const prod = doc.data() as Product;
+          if (prod.images) {
+            prod.images = prod.images.map(img => sanitizeUrl(img));
+          }
+          list.push(prod);
+        });
         // Sort products by date
         list.sort((a,b) => b.createdAt.localeCompare(a.createdAt));
         setProducts(list);
@@ -327,7 +368,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const showcaseSub = onSnapshot(collection(db, 'showcase_projects'), (snapshot) => {
       if (!snapshot.empty) {
         const list: ShowcaseProject[] = [];
-        snapshot.forEach(doc => list.push(doc.data() as ShowcaseProject));
+        snapshot.forEach(doc => {
+          const proj = doc.data() as ShowcaseProject;
+          if (proj.image) {
+            proj.image = sanitizeUrl(proj.image);
+          }
+          list.push(proj);
+        });
         setShowcaseProjects(list);
       }
     }, (error) => {

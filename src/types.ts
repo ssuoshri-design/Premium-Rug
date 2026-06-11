@@ -118,6 +118,7 @@ export interface WebsiteSetting {
   termsConditions: string;
   seoTitle: string;
   seoDescription: string;
+  homepageImages?: Record<string, string>;
 }
 
 export interface AdminUser {
