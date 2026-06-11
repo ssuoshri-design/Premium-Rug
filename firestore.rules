@@ -1,0 +1,170 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global safety net - default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- REUSABLE SECURITY PRIMITIVES ---
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "ssuoshri@gmail.com" || 
+        exists(/databases/$(database)/documents/admin_users/$(request.auth.token.email))
+      );
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // --- ENTITY-LEVEL SCHEMA VALIDATION HELPERS ---
+
+    function isValidProduct(p) {
+      return p.name is string && p.name.size() > 0 && p.name.size() <= 200
+        && p.sku is string && p.sku.size() > 0 && p.sku.size() <= 50
+        && p.category is string && p.category.size() > 0
+        && p.priceINR is number && p.priceINR >= 0
+        && p.priceUSD is number && p.priceUSD >= 0
+        && p.images is list && p.images.size() <= 10
+        && p.stockStatus in ["in_stock", "low_stock", "out_of_stock"];
+    }
+
+    function isValidCustomerInquiry(c) {
+      return c.name is string && c.name.size() > 0 && c.name.size() <= 100
+        && c.phone is string && c.phone.size() > 0 && c.phone.size() <= 30
+        && c.email is string && c.email.size() > 0 && c.email.size() <= 100
+        && c.country is string && c.country.size() > 0
+        && c.status in ["new", "contacted", "qualified", "closed"];
+    }
+
+    function isValidCustomRugRequest(r) {
+      return r.name is string && r.name.size() > 0 && r.name.size() <= 100
+        && r.phone is string && r.phone.size() > 0 && r.phone.size() <= 30
+        && r.email is string && r.email.size() > 0 && r.email.size() <= 100
+        && r.country is string && r.country.size() > 0
+        && r.desiredSize is string && r.desiredSize.size() <= 50
+        && r.desiredColor is string && r.desiredColor.size() <= 50
+        && r.desiredShape is string && r.desiredShape.size() <= 50
+        && r.status in ["pending", "design_phase", "active_weaving", "completed", "cancelled"];
+    }
+
+    function isValidOrder(o) {
+      return o.customerName is string && o.customerName.size() > 0
+        && o.phone is string && o.phone.size() > 0
+        && o.email is string && o.email.size() > 0
+        && o.country is string && o.country.size() > 0
+        && o.orderStatus in ["pending", "processed", "shipped", "delivered", "cancelled"];
+    }
+
+    function isValidReview(v) {
+      return v.name is string && v.name.size() > 0
+        && v.rating is number && v.rating >= 1 && v.rating <= 5
+        && v.comment is string && v.comment.size() > 0 && v.comment.size() <= 2000
+        && v.status in ["pending", "approved", "rejected"];
+    }
+
+    function isValidShowcaseProject(s) {
+      return s.title is string && s.title.size() > 0 && s.title.size() <= 200
+        && s.image is string && s.image.size() > 0
+        && s.category is string && s.category.size() > 0;
+    }
+
+    // --- ROUTE MATCH BLOCKS ---
+
+    // 1. PRODUCTS
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidProduct(incoming());
+      allow update: if isAdmin() && isValidProduct(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // 2. CATEGORIES
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // 3. ORDERS
+    match /orders/{orderId} {
+      allow read: if isAdmin();
+      allow create: if isValidOrder(incoming());
+      allow update: if isAdmin() && isValidOrder(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // 4. CUSTOMER INQUIRIES
+    match /customer_inquiries/{inquiryId} {
+      allow read: if isAdmin();
+      allow create: if isValidCustomerInquiry(incoming());
+      allow update: if isAdmin() && isValidCustomerInquiry(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // 5. CUSTOM RUG REQUESTS
+    match /custom_rug_requests/{requestId} {
+      allow read: if isAdmin();
+      allow create: if isValidCustomRugRequest(incoming());
+      allow update: if isAdmin() && isValidCustomRugRequest(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // 6. REVIEWS
+    match /customer_reviews/{reviewId} {
+      allow read: if isAdmin() || (resource.data.status == "approved");
+      allow create: if isValidReview(incoming());
+      allow update: if isAdmin() && isValidReview(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // 7. NEWSLETTER SUBSCRIBERS
+    match /newsletter_subscribers/{email} {
+      allow read: if isAdmin();
+      allow write: if true;
+    }
+
+    // 8. WEBSITE SETTINGS
+    match /website_settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 9. ADMIN USERS
+    match /admin_users/{email} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // 10. WEBSITE VISITOR LOGS
+    match /website_visitors/{date} {
+      allow read: if isAdmin();
+      allow write: if true;
+    }
+
+    // 11. SHOWCASE PROJECTS
+    match /showcase_projects/{projectId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidShowcaseProject(incoming());
+      allow delete: if isAdmin();
+    }
+  }
+}

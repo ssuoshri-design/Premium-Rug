@@ -1,0 +1,242 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Represents a luxury rug or carpet in the collection",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "sku": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "features": { "type": "array" },
+        "material": { "type": "string" },
+        "sizes": { "type": "array" },
+        "colors": { "type": "array" },
+        "priceINR": { "type": "number" },
+        "priceUSD": { "type": "number" },
+        "images": { "type": "array" },
+        "stockStatus": { "type": "string", "enum": ["in_stock", "low_stock", "out_of_stock"] },
+        "shippingInfo": { "type": "string" },
+        "seoTitle": { "type": "string" },
+        "seoDescription": { "type": "string" },
+        "rating": { "type": "number" },
+        "isFeatured": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "sku", "category", "priceINR", "priceUSD", "images", "stockStatus"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "A rug category/collection",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "image": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A luxury custom inquiry or cart order request",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "country": { "type": "string" },
+        "address": { "type": "string" },
+        "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "quantity": { "type": "number" },
+        "currency": { "type": "string" },
+        "price": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["pending", "paid", "refunded"] },
+        "orderStatus": { "type": "string", "enum": ["pending", "processed", "shipped", "delivered", "cancelled"] },
+        "trackingNumber": { "type": "string" },
+        "orderDate": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" },
+        "items": { "type": "array" }
+      },
+      "required": ["id", "customerName", "phone", "email", "country", "orderStatus", "orderDate"]
+    },
+    "CustomerReview": {
+      "title": "CustomerReview",
+      "description": "Reviews submitted by verified luxury rug buyers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "location": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] }
+      },
+      "required": ["id", "name", "rating", "comment", "verified", "createdAt", "status"]
+    },
+    "CustomerInquiry": {
+      "title": "CustomerInquiry",
+      "description": "General lead or contact card from the showroom or product page",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "country": { "type": "string" },
+        "source": { "type": "string" },
+        "productInterest": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["new", "contacted", "qualified", "closed"] },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "name", "phone", "email", "country", "createdAt", "status"]
+    },
+    "CustomRugRequest": {
+      "title": "CustomRugRequest",
+      "description": "Custom color, shape, size specification from a patron",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "country": { "type": "string" },
+        "desiredSize": { "type": "string" },
+        "desiredColor": { "type": "string" },
+        "desiredShape": { "type": "string" },
+        "referenceImage": { "type": "string" },
+        "projectDetails": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "design_phase", "active_weaving", "completed", "cancelled"] },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "name", "phone", "email", "country", "desiredSize", "desiredColor", "desiredShape", "createdAt", "status"]
+    },
+    "NewsletterSubscriber": {
+      "title": "NewsletterSubscriber",
+      "description": "Clients signed up for priority launches",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "subscribedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "subscribedAt"]
+    },
+    "WebsiteSetting": {
+      "title": "WebsiteSetting",
+      "description": "Global enterprise and branding parameters",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "businessName": { "type": "string" },
+        "founder": { "type": "string" },
+        "location": { "type": "string" },
+        "phone": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "contactEmail": { "type": "string" },
+        "shippingPolicy": { "type": "string" },
+        "refundPolicy": { "type": "string" },
+        "privacyPolicy": { "type": "string" },
+        "termsConditions": { "type": "string" },
+        "seoTitle": { "type": "string" },
+        "seoDescription": { "type": "string" },
+        "instagramUrl": { "type": "string" },
+        "facebookUrl": { "type": "string" },
+        "pinterestUrl": { "type": "string" },
+        "youtubeUrl": { "type": "string" },
+        "linkedinUrl": { "type": "string" }
+      },
+      "required": ["id"]
+    },
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Administrators with roles",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["Super Admin", "Manager", "Sales Team"] },
+        "name": { "type": "string" }
+      },
+      "required": ["email", "role"]
+    },
+    "WebsiteVisitorLog": {
+      "title": "WebsiteVisitorLog",
+      "description": "Daily visit aggregates",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "count": { "type": "number" },
+        "whatsappInquiries": { "type": "number" }
+      },
+      "required": ["date", "count"]
+    },
+    "ShowcaseProject": {
+      "title": "ShowcaseProject",
+      "description": "Premium showcase designs and portfolio installations",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "image": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "image", "category"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Store of available luxury rugs"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Direct filter classes"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Transactions and custom quotes"
+    },
+    "/customer_reviews/{reviewId}": {
+      "schema": "CustomerReview",
+      "description": "Customer feedback and reviews"
+    },
+    "/customer_inquiries/{inquiryId}": {
+      "schema": "CustomerInquiry",
+      "description": "Direct lead forms"
+    },
+    "/custom_rug_requests/{requestId}": {
+      "schema": "CustomRugRequest",
+      "description": "Custom weave commissions"
+    },
+    "/newsletter_subscribers/{email}": {
+      "schema": "NewsletterSubscriber",
+      "description": "Subscribers roster"
+    },
+    "/website_settings/{settingId}": {
+      "schema": "WebsiteSetting",
+      "description": "E-commerce general context"
+    },
+    "/admin_users/{email}": {
+      "schema": "AdminUser",
+      "description": "Authorized logins"
+    },
+    "/website_visitors/{date}": {
+      "schema": "WebsiteVisitorLog",
+      "description": "Visitor metrics tracking"
+    },
+    "/showcase_projects/{projectId}": {
+      "schema": "ShowcaseProject",
+      "description": "Showcase projects list"
+    }
+  }
+}

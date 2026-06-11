@@ -1,0 +1,6 @@
+{
+  "name": "Premium Rug Collection",
+  "description": "Ultra-premium luxury rug and designer carpet website for Premium Rug Collection. Hand-tufted ancestral woven designs, live curation portals and custom atelier studios curated by founder Mohd Sarik.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
