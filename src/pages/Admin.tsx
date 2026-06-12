@@ -76,6 +76,13 @@ export default function Admin() {
   const [signingIn, setSigningIn] = useState(false);
 
   // Product Form state
+  const [adminProductViewMode, setAdminProductViewMode] = useState<'containers' | 'table'>('containers');
+  const [editingCardId, setEditingCardId] = useState<string | null>(null);
+  const [tempName, setTempName] = useState('');
+  const [tempDescription, setTempDescription] = useState('');
+  const [tempImgUrl, setTempImgUrl] = useState('');
+  const [tempSavingId, setTempSavingId] = useState<string | null>(null);
+
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
   const [showProductForm, setShowProductForm] = useState(false);
   const [formName, setFormName] = useState('');
@@ -248,6 +255,33 @@ export default function Admin() {
       alert("Failed to commit product design forge package.");
     } finally {
       setFormSubmitting(false);
+    }
+  };
+
+  // Save localized container-card edits in real-time
+  const handleSaveInlineProduct = async (prodId: string) => {
+    if (!tempImgUrl) {
+      alert("Please upload or specify a valid photo path.");
+      return;
+    }
+    if (!tempName.trim()) {
+      alert("Product title cannot be empty.");
+      return;
+    }
+    setTempSavingId(prodId);
+    try {
+      await createOrUpdateProduct({
+        id: prodId,
+        name: tempName.trim(),
+        description: tempDescription.trim(),
+        images: [tempImgUrl]
+      });
+      setEditingCardId(null);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to commit inline changes to registry.");
+    } finally {
+      setTempSavingId(null);
     }
   };
 
@@ -905,81 +939,331 @@ export default function Admin() {
                     
                   </form>
                 ) : (
-                  /* PRODUCT LIST TABLE */
-                  <div className="bg-white dark:bg-neutral-950 border border-neutral-200/70 dark:border-neutral-900 rounded-2xl overflow-hidden shadow">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left font-sans text-xs">
-                        <thead>
-                          <tr className="bg-neutral-50 dark:bg-neutral-900 text-neutral-450 uppercase tracking-widest text-[9px] font-bold border-b border-neutral-200 dark:border-neutral-800">
-                            <th className="p-4 w-16">Asset</th>
-                            <th className="p-4">Carpet Details</th>
-                            <th className="p-4">SKU / Class</th>
-                            <th className="p-4">Pricing</th>
-                            <th className="p-4">Weave Reserve</th>
-                            <th className="p-4 text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-neutral-100 dark:divide-neutral-900">
-                          {products.length === 0 ? (
-                            <tr>
-                              <td colSpan={6} className="p-12 text-center text-neutral-500">No woven designs published in platform files yet.</td>
-                            </tr>
-                          ) : (
-                            products.map((prod) => (
-                              <tr key={prod.id} className="hover:bg-neutral-900/5 dark:hover:bg-neutral-900/30">
-                                <td className="p-4">
-                                  <div className="h-12 w-12 rounded-lg bg-neutral-900 border border-neutral-800 overflow-hidden shadow-inner">
-                                    <img src={prod.images[0]} alt="" className="h-full w-full object-cover" />
-                                  </div>
-                                </td>
-                                <td className="p-4 text-left">
-                                  <span className="font-serif font-bold text-neutral-850 dark:text-stone-150 block text-[13px]">{prod.name}</span>
-                                  <span className="text-[10px] text-neutral-450 block truncate max-w-xs">{prod.material}</span>
-                                </td>
-                                <td className="p-4 uppercase font-mono text-[10.5px]">
-                                  <span className="font-bold text-amber-500 block">{prod.sku}</span>
-                                  <span className="text-[9px] text-neutral-500 block">{prod.category}</span>
-                                </td>
-                                <td className="p-4 font-mono font-bold space-y-0.5 text-left">
-                                  <span className="block text-emerald-400">₹{prod.priceINR?.toLocaleString()}</span>
-                                  <span className="block text-neutral-400 text-[10px] font-light">${prod.priceUSD?.toLocaleString()}</span>
-                                </td>
-                                <td className="p-4">
-                                  <span className={`text-[9px] font-bold tracking-wider uppercase py-0.5 px-2 bg-neutral-900 w-fit block rounded ${
-                                    prod.stockStatus === 'in_stock' ? 'text-emerald-400 border border-emerald-500/10' :
-                                    prod.stockStatus === 'low_stock' ? 'text-amber-400 border border-amber-500/10' :
-                                    'text-red-400 border border-red-500/5'
-                                  }`}>
-                                    {prod.stockStatus === 'in_stock' ? 'IN SHOWROOM' :
-                                     prod.stockStatus === 'low_stock' ? 'LOW SECURED' : 'OUT / LOOM ONLY'}
-                                  </span>
-                                </td>
-                                <td className="p-4 text-right space-x-1.5 whitespace-nowrap">
-                                  <button 
-                                    onClick={() => handleOpenProductForm(prod)}
-                                    className="p-1 px-2.5 bg-neutral-900/10 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-amber-400 rounded hover:text-amber-400 cursor-pointer text-[10px] font-bold font-sans uppercase tracking-wider"
-                                    title="Edit design"
-                                  >
-                                    Edit
-                                  </button>
-                                  <button 
-                                    onClick={() => {
-                                      if (confirm(`Do you wish to purge ${prod.name} from public archives?`)) {
-                                        deleteProductById(prod.id);
-                                      }
-                                    }}
-                                    className="p-1 px-2.5 bg-red-950/15 text-red-400 border border-red-500/10 hover:bg-red-500 hover:text-white rounded cursor-pointer text-[10px] font-bold font-sans uppercase tracking-wider"
-                                    title="Purge design"
-                                  >
-                                    Purge
-                                  </button>
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
+                  /* PRODUCT LIST REFRESHED LAYOUT CONSOLE */
+                  <div className="space-y-6">
+                    {/* Presentation selection card */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 bg-white dark:bg-neutral-950 rounded-2xl border border-neutral-200/80 dark:border-neutral-900 text-left shadow-sm">
+                      <div>
+                        <h4 className="font-serif text-sm font-semibold text-neutral-800 dark:text-amber-400">Catalogue Representation Display</h4>
+                        <p className="text-[10px] text-neutral-500 font-sans mt-0.5">Toggle between interactive design containers with live photo tracking or the raw inventory table.</p>
+                      </div>
+                      <div className="flex gap-2 bg-neutral-100 dark:bg-neutral-900/50 p-1 rounded-xl font-sans font-bold text-[10px] tracking-wider uppercase border border-neutral-200/50 dark:border-neutral-850">
+                        <button
+                          type="button"
+                          onClick={() => setAdminProductViewMode('containers')}
+                          className={`px-4.5 py-2.5 rounded-lg cursor-pointer transition ${
+                            adminProductViewMode === 'containers'
+                              ? 'bg-amber-400 text-neutral-950 shadow-sm'
+                              : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-stone-200'
+                          }`}
+                        >
+                          Visual Containers
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAdminProductViewMode('table')}
+                          className={`px-4.5 py-2.5 rounded-lg cursor-pointer transition ${
+                            adminProductViewMode === 'table'
+                              ? 'bg-amber-400 text-neutral-950 shadow-sm'
+                              : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-stone-200'
+                          }`}
+                        >
+                          Compact Table Index
+                        </button>
+                      </div>
                     </div>
+
+                    {/* Conditional render of views */}
+                    {adminProductViewMode === 'containers' ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 text-left">
+                        {products.length === 0 ? (
+                          <div className="col-span-2 text-center py-20 bg-white dark:bg-neutral-950 rounded-3xl border border-neutral-200 dark:border-neutral-900 text-neutral-500 font-serif text-sm">
+                            No woven designs published in platform files yet.
+                          </div>
+                        ) : (
+                          products.map((prod) => {
+                            const isEditingThisCard = editingCardId === prod.id;
+                            const activeImgUrl = isEditingThisCard ? tempImgUrl : prod.images[0];
+                            return (
+                              <div
+                                key={prod.id}
+                                className={`rounded-3xl border bg-white dark:bg-neutral-950 shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 ${
+                                  isEditingThisCard
+                                    ? 'border-amber-400 ring-2 ring-amber-400/20 shadow-md'
+                                    : 'border-neutral-200/70 dark:border-neutral-900 hover:border-amber-500/30'
+                                }`}
+                              >
+                                <div className="p-6 space-y-4">
+                                  {/* Container Image view with real-time update */}
+                                  <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-zinc-900 border border-neutral-200 dark:border-neutral-850 group">
+                                    {activeImgUrl ? (
+                                      <img
+                                        src={activeImgUrl}
+                                        alt={prod.name}
+                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+                                      />
+                                    ) : (
+                                      <div className="h-full w-full flex flex-col items-center justify-center p-6 text-center text-neutral-500 select-none">
+                                        <Sliders className="h-8 w-8 text-neutral-600 mb-2" />
+                                        <p className="text-xs font-sans">No photography resource assigned.</p>
+                                      </div>
+                                    )}
+                                    <div className="absolute top-3.5 left-3.5 flex gap-1.5 flex-wrap">
+                                      <span className="bg-zinc-950/85 backdrop-blur-md text-amber-400 text-[8.5px] font-mono uppercase tracking-widest font-extrabold px-2.5 py-1 rounded-full border border-white/5">
+                                        {prod.sku}
+                                      </span>
+                                      <span className="bg-zinc-950/85 backdrop-blur-md text-emerald-400 text-[8.5px] font-sans uppercase tracking-widest font-extrabold px-2.5 py-1 rounded-full border border-white/5">
+                                        ₹{prod.priceINR?.toLocaleString()}
+                                      </span>
+                                    </div>
+                                    {isEditingThisCard && (
+                                      <span className="absolute bottom-3.5 right-3.5 bg-amber-400 text-neutral-950 text-[8px] font-sans tracking-widest uppercase font-extrabold px-2.5 py-1 rounded animate-pulse">
+                                        Editing Active Image
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Database Path Tracker Area */}
+                                  <div className="bg-neutral-50 dark:bg-neutral-900/60 font-mono text-[9.5px] p-4 rounded-2xl border border-neutral-200/50 dark:border-neutral-850 space-y-1.5 text-neutral-500 dark:text-neutral-450">
+                                    <div className="flex justify-between items-center bg-neutral-250/50 dark:bg-neutral-950/40 px-2.5 py-0.5 rounded text-[8.5px] font-bold text-neutral-450 uppercase tracking-widest mb-2 self-start w-fit">
+                                      <span>Database Path Tracker</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 overflow-hidden">
+                                      <span className="text-amber-500 font-bold shrink-0">Path Ref:</span>
+                                      <span className="font-bold select-all truncate text-neutral-800 dark:text-neutral-300">
+                                        products / {prod.id} / images[0]
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 overflow-hidden">
+                                      <span className="text-emerald-500 font-bold shrink-0">Current:</span>
+                                      <span className="truncate select-all text-neutral-600 dark:text-neutral-300 font-light">
+                                        {activeImgUrl || "Empty / Unspecified"}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-purple-500 font-bold shrink-0">Encoding:</span>
+                                      <span>
+                                        {activeImgUrl?.startsWith('data:')
+                                          ? `Embedded Base64 Binary (~${Math.round(activeImgUrl.length / 1024)} KB)`
+                                          : (activeImgUrl ? "Remote CDN URL Endpoint" : "Unspecified")}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Editable Title and Description Inside Card Container */}
+                                  {isEditingThisCard ? (
+                                    <div className="space-y-4 pt-2">
+                                      <div className="space-y-1">
+                                        <label className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 block">Product Title</label>
+                                        <input
+                                          type="text"
+                                          value={tempName}
+                                          onChange={(e) => setTempName(e.target.value)}
+                                          className="w-full bg-stone-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 rounded-xl px-4 py-2.5 text-xs font-sans text-neutral-800 dark:text-stone-100 outline-none"
+                                          required
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1">
+                                        <label className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 block">Product Description</label>
+                                        <textarea
+                                          value={tempDescription}
+                                          onChange={(e) => setTempDescription(e.target.value)}
+                                          rows={3}
+                                          className="w-full bg-stone-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 rounded-xl px-4 py-2.5 text-xs font-sans text-neutral-800 dark:text-stone-100 outline-none resize-none leading-relaxed"
+                                          required
+                                        />
+                                      </div>
+
+                                      <div className="space-y-2 border-t border-neutral-100 dark:border-neutral-900 pt-3.5">
+                                        <label className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 block">Replace Photo Asset (Instantly Updates Preview)</label>
+                                        <div className="space-y-2.5">
+                                          <ImageUpload
+                                            label="Upload Local Image"
+                                            currentImage={tempImgUrl}
+                                            onImageUploaded={(b64) => setTempImgUrl(b64)}
+                                            onClear={() => setTempImgUrl('')}
+                                          />
+                                          <div className="space-y-1">
+                                            <span className="text-[9px] uppercase font-bold tracking-wider text-neutral-400 block">Or Paste Remote URL</span>
+                                            <input
+                                              type="text"
+                                              value={tempImgUrl}
+                                              onChange={(e) => setTempImgUrl(e.target.value)}
+                                              placeholder="https://images.unsplash.com/photo-..."
+                                              className="w-full bg-stone-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-805 rounded-xl px-3 py-2 text-xs text-neutral-850 dark:text-stone-250 outline-none font-mono"
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-2 pt-1">
+                                      <h3 className="font-serif font-semibold text-[15px] text-neutral-900 dark:text-stone-100 tracking-tight leading-snug">
+                                        {prod.name}
+                                      </h3>
+                                      <p className="text-xs text-neutral-500 dark:text-neutral-400 font-sans leading-relaxed tracking-wide font-light line-clamp-3">
+                                        {prod.description}
+                                      </p>
+                                      
+                                      <div className="flex flex-wrap gap-1.5 pt-1.5 text-[9.5px] font-mono tracking-wide text-neutral-400">
+                                        <span className="bg-neutral-100 dark:bg-neutral-900/50 px-2.5 py-1 rounded-lg">Category: <strong className="text-amber-500 uppercase">{prod.category}</strong></span>
+                                        <span className="bg-neutral-100 dark:bg-neutral-900/50 px-2.5 py-1 rounded-lg">Material: <strong className="text-neutral-600 dark:text-neutral-350">{prod.material.split(',')[0]}</strong></span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Controls Row */}
+                                <div className="p-4 bg-neutral-50 dark:bg-neutral-900/40 border-t border-neutral-100 dark:border-neutral-900 flex justify-between items-center gap-2">
+                                  {isEditingThisCard ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => setEditingCardId(null)}
+                                        className="px-4 py-2 hover:bg-neutral-200 dark:hover:bg-neutral-900 text-neutral-600 dark:text-stone-300 rounded-xl text-[10px] font-sans font-bold uppercase tracking-wider cursor-pointer"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        type="button"
+                                        disabled={tempSavingId === prod.id}
+                                        onClick={() => handleSaveInlineProduct(prod.id)}
+                                        className="px-4 py-2.5 bg-amber-400 hover:brightness-110 text-neutral-950 font-sans font-extrabold text-[10px] rounded-xl uppercase tracking-wider cursor-pointer shadow-md flex items-center gap-1.5"
+                                      >
+                                        {tempSavingId === prod.id ? (
+                                          <>
+                                            <span className="h-3 w-3 border-2 border-neutral-950 border-t-transparent rounded-full animate-spin" />
+                                            Saving Changes...
+                                          </>
+                                        ) : (
+                                          'Save Changes'
+                                        )}
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (confirm(`Do you wish to purge ${prod.name} from public archives?`)) {
+                                            deleteProductById(prod.id);
+                                          }
+                                        }}
+                                        className="text-red-400 hover:text-red-500 px-3 py-2 hover:bg-red-500/5 rounded-xl text-[10px] font-sans uppercase font-bold tracking-wider cursor-pointer transition"
+                                      >
+                                        Purge Item
+                                      </button>
+                                      
+                                      <div className="flex items-center gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setEditingCardId(prod.id);
+                                            setTempName(prod.name);
+                                            setTempDescription(prod.description);
+                                            setTempImgUrl(prod.images[0] || '');
+                                          }}
+                                          className="px-3.5 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-250 dark:border-neutral-800 text-neutral-800 dark:text-stone-200 rounded-xl text-[10px] font-bold tracking-wider font-sans uppercase transition cursor-pointer hover:border-amber-400 hover:text-amber-400 flex items-center gap-1"
+                                        >
+                                          Edit Container
+                                        </button>
+                                        
+                                        <button
+                                          type="button"
+                                          onClick={() => handleOpenProductForm(prod)}
+                                          className="px-3.5 py-2.5 bg-amber-400 text-neutral-950 rounded-xl text-[10px] font-extrabold tracking-wider font-sans uppercase transition cursor-pointer hover:brightness-105 flex items-center gap-1 shadow-sm"
+                                          title="Configure Stock & Pricing Attributes"
+                                        >
+                                          Deep Config
+                                        </button>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    ) : (
+                      /* PRODUCT LIST TABLE */
+                      <div className="bg-white dark:bg-neutral-950 border border-neutral-200/70 dark:border-neutral-900 rounded-2xl overflow-hidden shadow">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left font-sans text-xs">
+                            <thead>
+                              <tr className="bg-neutral-50 dark:bg-neutral-900 text-neutral-450 uppercase tracking-widest text-[9px] font-bold border-b border-neutral-200 dark:border-neutral-800">
+                                <th className="p-4 w-16">Asset</th>
+                                <th className="p-4">Carpet Details</th>
+                                <th className="p-4">SKU / Class</th>
+                                <th className="p-4">Pricing</th>
+                                <th className="p-4">Weave Reserve</th>
+                                <th className="p-4 text-right">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-900">
+                              {products.length === 0 ? (
+                                <tr>
+                                  <td colSpan={6} className="p-12 text-center text-neutral-500 font-serif">No woven designs published in platform files yet.</td>
+                                </tr>
+                              ) : (
+                                products.map((prod) => (
+                                  <tr key={prod.id} className="hover:bg-neutral-900/5 dark:hover:bg-neutral-900/30">
+                                    <td className="p-4">
+                                      <div className="h-12 w-12 rounded-lg bg-neutral-900 border border-neutral-800 overflow-hidden shadow-inner">
+                                        <img src={prod.images[0]} alt="" className="h-full w-full object-cover" />
+                                      </div>
+                                    </td>
+                                    <td className="p-4 text-left">
+                                      <span className="font-serif font-bold text-neutral-850 dark:text-stone-150 block text-[13px]">{prod.name}</span>
+                                      <span className="text-[10px] text-neutral-445 block truncate max-w-xs">{prod.material}</span>
+                                    </td>
+                                    <td className="p-4 uppercase font-mono text-[10.5px]">
+                                      <span className="font-bold text-amber-500 block">{prod.sku}</span>
+                                      <span className="text-[9px] text-neutral-500 block">{prod.category}</span>
+                                    </td>
+                                    <td className="p-4 font-mono font-bold space-y-0.5 text-left">
+                                      <span className="block text-emerald-400">₹{prod.priceINR?.toLocaleString()}</span>
+                                      <span className="block text-neutral-400 text-[10px] font-light">${prod.priceUSD?.toLocaleString()}</span>
+                                    </td>
+                                    <td className="p-4">
+                                      <span className={`text-[9px] font-bold tracking-wider uppercase py-0.5 px-2 bg-neutral-900 w-fit block rounded ${
+                                        prod.stockStatus === 'in_stock' ? 'text-emerald-400 border border-emerald-500/10' :
+                                        prod.stockStatus === 'low_stock' ? 'text-amber-400 border border-amber-500/10' :
+                                        'text-red-400 border border-red-500/5'
+                                      }`}>
+                                        {prod.stockStatus === 'in_stock' ? 'IN SHOWROOM' :
+                                         prod.stockStatus === 'low_stock' ? 'LOW SECURED' : 'OUT / LOOM ONLY'}
+                                      </span>
+                                    </td>
+                                    <td className="p-4 text-right space-x-1.5 whitespace-nowrap">
+                                      <button 
+                                        onClick={() => handleOpenProductForm(prod)}
+                                        className="p-1 px-2.5 bg-neutral-900/10 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-amber-400 rounded hover:text-amber-400 cursor-pointer text-[10px] font-bold font-sans uppercase tracking-wider"
+                                        title="Edit design"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button 
+                                        onClick={() => {
+                                          if (confirm(`Do you wish to purge ${prod.name} from public archives?`)) {
+                                            deleteProductById(prod.id);
+                                          }
+                                        }}
+                                        className="p-1 px-2.5 bg-red-950/15 text-red-400 border border-red-500/10 hover:bg-red-500 hover:text-white rounded cursor-pointer text-[10px] font-bold font-sans uppercase tracking-wider"
+                                        title="Purge design"
+                                      >
+                                        Purge
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

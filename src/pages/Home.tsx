@@ -246,7 +246,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch">
           
           {/* Collection 1: Modern Rugs */}
-          <div className="md:col-span-8 group relative overflow-hidden rounded-2xl shadow-sm h-96 cursor-pointer" onClick={() => setCurrentPage('collection')}>
+          <div className="md:col-span-8 group relative overflow-hidden rounded-2xl shadow-sm h-80 sm:h-96 cursor-pointer" onClick={() => setCurrentPage('collection')}>
             <HomeImage 
               imageKey="bento1" 
               alt="Modern Rugs Collection" 
@@ -265,7 +265,7 @@ export default function Home() {
           </div>
 
           {/* Collection 2: Abstract Rugs */}
-          <div className="md:col-span-4 group relative overflow-hidden rounded-2xl shadow-sm h-96 cursor-pointer" onClick={() => setCurrentPage('collection')}>
+          <div className="md:col-span-4 group relative overflow-hidden rounded-2xl shadow-sm h-80 sm:h-96 cursor-pointer" onClick={() => setCurrentPage('collection')}>
             <HomeImage 
               imageKey="bento2" 
               alt="Artistic Abstract Rugs Collection" 
@@ -284,7 +284,7 @@ export default function Home() {
           </div>
 
           {/* Collection 3: Hand-Tufted Rugs */}
-          <div className="md:col-span-4 group relative overflow-hidden rounded-2xl shadow-sm h-96 cursor-pointer" onClick={() => setCurrentPage('collection')}>
+          <div className="md:col-span-4 group relative overflow-hidden rounded-2xl shadow-sm h-80 sm:h-96 cursor-pointer" onClick={() => setCurrentPage('collection')}>
             <HomeImage 
               imageKey="bento3" 
               alt="Handcrafted Hand-Tufted Rugs" 
@@ -303,7 +303,7 @@ export default function Home() {
           </div>
 
           {/* Collection 4: Round Rugs */}
-          <div className="md:col-span-4 group relative overflow-hidden rounded-2xl shadow-sm h-96 cursor-pointer" onClick={() => setCurrentPage('collection')}>
+          <div className="md:col-span-4 group relative overflow-hidden rounded-2xl shadow-sm h-80 sm:h-96 cursor-pointer" onClick={() => setCurrentPage('collection')}>
             <HomeImage 
               imageKey="bento4" 
               alt="Symmetry Round Rugs" 
@@ -322,7 +322,7 @@ export default function Home() {
           </div>
 
           {/* Collection 5: Custom Rugs */}
-          <div className="md:col-span-4 group relative overflow-hidden rounded-2xl shadow-sm h-96 cursor-pointer bg-zinc-900" onClick={() => setCurrentPage('custom-rug')}>
+          <div className="md:col-span-4 group relative overflow-hidden rounded-2xl shadow-sm h-80 sm:h-96 cursor-pointer bg-zinc-900" onClick={() => setCurrentPage('custom-rug')}>
             <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-neutral-900 to-zinc-950 transition-all duration-300 group-hover:opacity-90" />
             <div className="absolute inset-0 p-8 flex flex-col justify-between text-white text-left">
               <div className="flex justify-between items-center w-full">
@@ -650,7 +650,7 @@ export default function Home() {
             </div>
 
             <div className="md:col-span-4 space-y-5">
-              <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-square bg-zinc-100AndHover animate-pulse" style={{ animationDuration: '4s' }}>
+              <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-square bg-neutral-100 dark:bg-neutral-900 animate-pulse" style={{ animationDuration: '4s' }}>
                 <img 
                   src="https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?auto=format&fit=crop&q=80&w=700" 
                   alt="Modern Sofa Lounge" 
@@ -759,7 +759,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-6 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 pt-4">
             {[
               { country: "India", desc: "Arrives right at your doorstep", time: "10-15 Days" },
               { country: "United States", desc: "Express Air Freight cargo", time: "18-24 Days" },
@@ -843,7 +843,7 @@ export default function Home() {
               />
             </div>
             {/* Small floating chat badge */}
-            <div className="absolute -bottom-6 -left-6 bg-white border border-sand/60 px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3">
+            <div className="absolute -bottom-6 left-4 md:-left-6 bg-white border border-sand/60 px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <div className="text-left">
                 <span className="font-sans text-xs font-bold tracking-wider uppercase text-neutral-400 block">Mohd Sarik</span>
