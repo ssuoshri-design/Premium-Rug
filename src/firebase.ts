@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 import firebaseConfig from '../firebase-applet-config.json';
 
 // Initialize Firebase App
@@ -11,6 +12,9 @@ export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
 // Initialize Authentication
 export const auth = getAuth(app);
+
+// Initialize Firebase Storage
+export const storage = getStorage(app);
 
 // --- HARDENED FIRESTORE ERROR HANDLING INTERFACE ---
 export enum OperationType {

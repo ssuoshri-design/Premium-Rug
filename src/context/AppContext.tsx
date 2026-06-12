@@ -443,7 +443,90 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Listen to inquries
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setInquiries([
+        {
+          id: 'mock_inq_1',
+          name: 'Sophia Loren',
+          phone: '+1 (310) 555-0192',
+          email: 'sophia@beverlyestates.com',
+          country: 'United States',
+          source: 'Website Form',
+          productInterest: 'Emperor Obsidian Black',
+          message: 'Interested in the Emperor Obsidian block for our master lounge.',
+          status: 'new',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'mock_inq_2',
+          name: 'Rajesh Mehta',
+          phone: '+91 98220 11223',
+          email: 'rajesh@mehtacorp.in',
+          country: 'India',
+          source: 'WhatsApp Quick Inquiry',
+          productInterest: 'General Luxury Line',
+          message: 'Requested a complimentary catalog and discussions about wool shag rug swatches.',
+          status: 'contacted',
+          createdAt: new Date(Date.now() - 3600000).toISOString()
+        }
+      ]);
+      setCustomRequests([
+        {
+          id: 'mock_req_1',
+          name: 'Marcus Aurelius',
+          phone: '+39 06 123456',
+          email: 'philosopher@rome.it',
+          country: 'Italy',
+          desiredSize: '12x15 ft',
+          desiredColor: 'Deep Crimson and Amber Gold',
+          desiredShape: 'Rectangular',
+          extraSpecs: 'Fully hand-knotted 150-knot precision weave.',
+          imageUrl: 'https://images.unsplash.com/photo-1628592102751-ba83b02d42d6',
+          status: 'design_phase',
+          createdAt: new Date().toISOString()
+        }
+      ]);
+      setOrders([
+        {
+          id: 'mock_ord_1',
+          customerName: 'Aria Thompson',
+          phone: '+44 20 7946 0958',
+          email: 'aria.t@londonhomes.co.uk',
+          country: 'United Kingdom',
+          address: '42 Baker St, London NW1 6XE',
+          items: [
+            {
+              productId: 'p1',
+              productName: 'Emperor Obsidian Black',
+              quantity: 1,
+              selectedSize: '8x10 ft',
+              selectedColor: 'Obsidian Black / Gold',
+              price: 4500
+            }
+          ],
+          totalPrice: 4500,
+          currency: 'USD',
+          paymentStatus: 'pending',
+          orderStatus: 'processed',
+          orderDate: new Date().toISOString(),
+          notes: 'Deliver prior to weekend.'
+        }
+      ]);
+      setSubscribers([
+        { email: 'ssuoshri@gmail.com', joinedAt: new Date().toISOString() },
+        { email: 'curator@metmuseum.org', joinedAt: new Date().toISOString() }
+      ]);
+      setAdminUsers([
+        { email: 'ssuoshri@gmail.com', role: 'Super Admin', name: 'Mohd Sarik' }
+      ]);
+      setVisitorLogs([
+        { date: new Date().toISOString().split('T')[0], count: 154, whatsappInquiries: 3 }
+      ]);
+      return;
+    }
+
+    // Listen to inquiries
     const inqSub = onSnapshot(collection(db, 'customer_inquiries'), (snapshot) => {
       const list: CustomerInquiry[] = [];
       snapshot.forEach(doc => list.push(doc.data() as CustomerInquiry));
@@ -497,7 +580,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       admSub();
       visSub();
     };
-  }, [isAdminUser]);
+  }, [isAdminUser, currentUser]);
 
   // --- GOOGLE AUTHENTICATION FLOWS ---
   const signInWithGoogle = async () => {
@@ -593,6 +676,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       status: 'new'
     };
 
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      if (isAdminUser) {
+        setInquiries(prev => [item, ...prev]);
+      }
+      return;
+    }
+
     try {
       await setDoc(doc(db, 'customer_inquiries', id), item);
     } catch (error) {
@@ -608,6 +699,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
       status: 'pending'
     };
+
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      if (isAdminUser) {
+        setCustomRequests(prev => [item, ...prev]);
+      }
+      return;
+    }
 
     try {
       await setDoc(doc(db, 'custom_rug_requests', id), item);
@@ -629,6 +728,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       status: 'pending' // Admin must approve it inside dashboard
     };
 
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setReviews(prev => [item, ...prev]);
+      return;
+    }
+
     try {
       await setDoc(doc(db, 'customer_reviews', id), item);
     } catch (error) {
@@ -640,6 +745,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail) return false;
     
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      if (isAdminUser) {
+        setSubscribers(prev => [{ email: cleanEmail, joinedAt: new Date().toISOString() }, ...prev]);
+      }
+      return true;
+    }
+
     try {
       await setDoc(doc(db, 'newsletter_subscribers', cleanEmail), {
         email: cleanEmail,
@@ -683,6 +796,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       notes
     };
 
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      if (isAdminUser) {
+        setOrders(prev => [order, ...prev]);
+      }
+      clearCart();
+      return;
+    }
+
     try {
       await setDoc(doc(db, 'orders', id), order);
       clearCart();
@@ -699,6 +821,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       id,
       createdAt: new Date().toISOString()
     };
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setProducts(prev => [complete, ...prev]);
+      return;
+    }
     try {
       await setDoc(doc(db, 'products', id), complete);
     } catch (error) {
@@ -707,6 +834,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const editProduct = async (id: string, p: Partial<Product>) => {
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setProducts(prev => prev.map(item => item.id === id ? { ...item, ...p } : item));
+      return;
+    }
     try {
       await updateDoc(doc(db, 'products', id), p);
     } catch (error) {
@@ -715,6 +847,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteProduct = async (id: string) => {
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setProducts(prev => prev.filter(item => item.id !== id));
+      return;
+    }
     try {
       await deleteDoc(doc(db, 'products', id));
     } catch (error) {
@@ -723,6 +860,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateInquiryStatus = async (id: string, status: CustomerInquiry['status'], notes?: string) => {
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setInquiries(prev => prev.map(item => item.id === id ? { ...item, status, ...(notes !== undefined ? { notes } : {}) } : item));
+      return;
+    }
     try {
       const fields: Partial<CustomerInquiry> = { status };
       if (notes !== undefined) fields.notes = notes;
@@ -733,6 +875,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateCustomRequestStatus = async (id: string, status: CustomRugRequest['status'], notes?: string) => {
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setCustomRequests(prev => prev.map(item => item.id === id ? { ...item, status, ...(notes !== undefined ? { notes } : {}) } : item));
+      return;
+    }
     try {
       const fields: Partial<CustomRugRequest> = { status };
       if (notes !== undefined) fields.notes = notes;
@@ -743,6 +890,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateOrderStatus = async (id: string, status: Order['orderStatus'], trackingNumber?: string) => {
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setOrders(prev => prev.map(item => item.id === id ? { ...item, orderStatus: status, ...(trackingNumber !== undefined ? { trackingNumber } : {}) } : item));
+      return;
+    }
     try {
       const fields: Partial<Order> = { orderStatus: status };
       if (trackingNumber !== undefined) fields.trackingNumber = trackingNumber;
@@ -753,6 +905,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateReviewStatus = async (id: string, status: CustomerReview['status']) => {
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setReviews(prev => prev.map(item => item.id === id ? { ...item, status } : item));
+      return;
+    }
     try {
       await updateDoc(doc(db, 'customer_reviews', id), { status });
     } catch (error) {
@@ -761,6 +918,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateGlobalSettings = async (s: Partial<WebsiteSetting>) => {
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setSettings(prev => ({ ...prev, ...s }));
+      return;
+    }
     try {
       await updateDoc(doc(db, 'website_settings', 'default_config'), s);
       setSettings(prev => ({ ...prev, ...s }));
@@ -776,6 +938,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       id,
       createdAt: new Date().toISOString()
     };
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setShowcaseProjects(prev => [complete, ...prev]);
+      return;
+    }
     try {
       await setDoc(doc(db, 'showcase_projects', id), complete);
     } catch (error) {
@@ -784,6 +951,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const editShowcaseProject = async (id: string, p: Partial<ShowcaseProject>) => {
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setShowcaseProjects(prev => prev.map(item => item.id === id ? { ...item, ...p } : item));
+      return;
+    }
     try {
       await updateDoc(doc(db, 'showcase_projects', id), p);
     } catch (error) {
@@ -792,6 +964,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteShowcaseProject = async (id: string) => {
+    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
+    if (isMock) {
+      setShowcaseProjects(prev => prev.filter(item => item.id !== id));
+      return;
+    }
     try {
       await deleteDoc(doc(db, 'showcase_projects', id));
     } catch (error) {

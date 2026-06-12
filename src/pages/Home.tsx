@@ -25,6 +25,9 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { compressImage } from '../components/imageCompressor';
+import ThreeDFlag from '../components/ThreeDFlag';
+import ImageUpload from '../components/ImageUpload';
 
 export default function Home() {
   const { 
@@ -57,33 +60,25 @@ export default function Home() {
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [isProcessingImg, setIsProcessingImg] = useState<boolean>(false);
 
-  // Quick drag & drop or choose file base64 parser
-  const processBase64Image = (file: File) => {
+  // Quick drag & drop or choose file base64 parser with canvas compression
+  const processBase64Image = async (file: File) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
       setImageUploadError('Please choose a valid image file formatting (PNG, JPG, WEBP).');
       return;
     }
-    if (file.size > 2.5 * 1024 * 1024) {
-      setImageUploadError('Photo exceeds 2.5MB target limit. Please select a compressed asset.');
-      return;
-    }
+    
     setIsProcessingImg(true);
     setImageUploadError(null);
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setTempImageUrl(reader.result);
-      } else {
-        setImageUploadError('Error encoding picture stream.');
-      }
+
+    try {
+      const compressedBase64 = await compressImage(file, 1000, 0.75);
+      setTempImageUrl(compressedBase64);
+    } catch (err: any) {
+      setImageUploadError(err?.message || 'Could not process and compress photo.');
+    } finally {
       setIsProcessingImg(false);
-    };
-    reader.onerror = () => {
-      setImageUploadError('Could not process photo.');
-      setIsProcessingImg(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleSaveHomepageAssetImage = async () => {
@@ -759,7 +754,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 pt-6">
             {[
               { country: "India", desc: "Arrives right at your doorstep", time: "10-15 Days" },
               { country: "United States", desc: "Express Air Freight cargo", time: "18-24 Days" },
@@ -770,16 +765,29 @@ export default function Home() {
             ].map((lane, idx) => (
               <div 
                 key={idx} 
-                className="bg-soft-beige/60 hover:bg-soft-beige rounded-2xl border border-sand/20 py-8 px-4 text-center transition-all duration-300"
+                className="group bg-gradient-to-b from-stone-50 to-[#F2EFE9] dark:from-neutral-900 dark:to-neutral-950 rounded-2xl border-[1.5px] border-sand/50 dark:border-neutral-800/65 border-b-[8px] border-r-[3px] border-stone-300/80 dark:border-b-neutral-950 dark:border-r-neutral-900/60 p-6 text-center transition-all duration-500 hover:-translate-y-3.5 hover:border-b-[12px] hover:border-r-[5px] hover:border-muted-gold/40 cursor-default shadow-md hover:shadow-[0_24px_45px_rgba(212,163,89,0.16)] flex flex-col justify-between h-[270px] relative overflow-hidden"
               >
-                <div className="h-10 w-10 bg-white shadow-sm rounded-full mx-auto mb-4 flex items-center justify-center text-muted-gold">
-                  <Globe2 className="h-4 w-4" />
+                {/* Visual tactile texture accent resembling fine packing textile */}
+                <div className="absolute inset-0 opacity-[0.015] bg-repeat pointer-events-none group-hover:opacity-[0.03] transition-opacity duration-500" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=150')" }} />
+                
+                <div>
+                  {/* Real waving 3D flag with silk physics shadow */}
+                  <div className="relative mx-auto mb-4 flex items-center justify-center drop-shadow-[0_10px_16px_rgba(0,0,0,0.22)] transform transition-transform duration-500 group-hover:scale-110 group-hover:-translate-y-1.5 group-hover:rotate-1">
+                    <ThreeDFlag country={lane.country} className="w-20 h-13" />
+                    {/* Shadow layer underneath flag for flying physical appearance */}
+                    <div className="absolute -bottom-1.5 left-2 right-2 h-1 bg-black/25 blur-[3px] opacity-60 group-hover:opacity-100 transition-opacity duration-500 rounded-full" />
+                  </div>
+
+                  <h4 className="font-serif text-base font-bold tracking-wide text-zinc-900 dark:text-stone-100 mt-2 block leading-none">{lane.country}</h4>
+                  <p className="text-[11px] font-sans text-neutral-500 dark:text-stone-400 mt-2 leading-relaxed font-light">{lane.desc}</p>
                 </div>
-                <h4 className="font-serif text-base font-semibold text-zinc-900 block leading-none">{lane.country}</h4>
-                <p className="text-xs font-sans text-neutral-400 mt-1 leading-normal">{lane.desc}</p>
-                <span className="inline-block mt-3 bg-white px-3 py-1.5 rounded-full border border-sand/30 font-sans text-xs text-muted-gold uppercase tracking-wider font-bold">
-                  {lane.time}
-                </span>
+
+                {/* Box layout seam resembling wooden crate or packing container dispatch seal */}
+                <div className="mt-4 pt-3.5 border-t border-dashed border-stone-350 dark:border-neutral-800">
+                  <span className="inline-block bg-white dark:bg-neutral-900 px-3.5 py-1.5 rounded-lg border border-sand/40 dark:border-neutral-800 font-sans text-[10px] text-muted-gold dark:text-champagne uppercase tracking-wider font-extrabold shadow-sm group-hover:bg-amber-400 group-hover:text-neutral-950 group-hover:border-amber-300 transition-all duration-300 transform group-hover:scale-105">
+                    {lane.time}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -895,50 +903,13 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Live Image Preview Frame */}
-                {tempImageUrl ? (
-                  <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-zinc-900 border border-amber-400/30 group">
-                    <img
-                      src={tempImageUrl}
-                      alt="Visual Preview"
-                      className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                      <button
-                        onClick={() => setTempImageUrl('')}
-                        className="bg-red-600 text-white text-xs font-bold tracking-wider uppercase py-2 px-4 rounded-full flex items-center gap-1 shadow hover:bg-red-700 cursor-pointer"
-                      >
-                        <X className="h-3 w-3" />
-                        <span>Clear Image</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="border border-dashed border-neutral-350 dark:border-neutral-800 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 text-center cursor-pointer hover:border-amber-400/50 hover:bg-amber-400/5 transition duration-300 relative">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        if (e.target.files?.[0]) {
-                          processBase64Image(e.target.files[0]);
-                        }
-                      }}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                    <div className="p-4 bg-stone-50 dark:bg-zinc-900 text-neutral-450 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800 rounded-full">
-                      {isProcessingImg ? (
-                        <span className="h-5 w-5 block border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Upload className="h-5 w-5 text-amber-500" />
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold tracking-wide">Drag & Drop Image or Tap here to Upload</p>
-                      <p className="text-[10px] text-neutral-400">Supports PNG, JPG, WEBP (under 2.5MB)</p>
-                    </div>
-                  </div>
-                )}
+                {/* Integrated Mobile-Friendly Cloud Image uploader */}
+                <ImageUpload 
+                  label="Locally Upload Image Asset"
+                  currentImage={tempImageUrl}
+                  onImageUploaded={(url) => setTempImageUrl(url)}
+                  onClear={() => setTempImageUrl('')}
+                />
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-neutral-400">

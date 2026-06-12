@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import ImageUpload from '../components/ImageUpload';
 import { 
   Sparkles, 
   Ruler, 
@@ -272,15 +273,27 @@ export default function CustomRug() {
                   </select>
                 </div>
 
-                <div className="space-y-1.5 text-left">
-                  <label className="text-xs font-sans font-bold tracking-wide text-neutral-550 uppercase">Inspiration (Pinterest Link or Image URL)</label>
-                  <input 
-                    type="url" 
-                    value={referenceImgUrl}
-                    onChange={(e) => setReferenceImgUrl(e.target.value)}
-                    placeholder="E.g. https://pinterest.com/pin/xyz.jpg" 
-                    className="w-full bg-white dark:bg-neutral-900 border border-sand dark:border-neutral-850 rounded-xl p-3.5 text-sm outline-none focus:border-muted-gold transition-colors font-sans"
+                <div className="space-y-3.5 text-left">
+                  <label className="text-xs font-sans font-bold tracking-wide text-neutral-550 uppercase block">Inspiration Reference / Blueprint Photo</label>
+                  
+                  <ImageUpload 
+                    onImageUploaded={(b64) => setReferenceImgUrl(b64)}
+                    currentImage={referenceImgUrl.startsWith('data:image') ? referenceImgUrl : ''}
+                    onClear={() => setReferenceImgUrl('')}
+                    label="Upload Photo from Device Gallery"
+                    maxSizeMB={10}
                   />
+
+                  <div className="space-y-1 mt-2">
+                    <span className="text-[10px] font-sans font-bold tracking-wider text-neutral-400 block uppercase">Or Paste Public Web link/Pinterest Pin URL</span>
+                    <input 
+                      type="url" 
+                      value={referenceImgUrl.startsWith('data:image') ? '' : referenceImgUrl}
+                      onChange={(e) => setReferenceImgUrl(e.target.value)}
+                      placeholder="E.g. https://pinterest.com/pin/xyz.jpg" 
+                      className="w-full bg-white dark:bg-neutral-900 border border-sand dark:border-neutral-850 rounded-xl p-3 text-xs outline-none focus:border-muted-gold transition-colors font-sans"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-1.5 text-left">

@@ -1,8 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Sparkles, AlertCircle } from 'lucide-react';
+import { compressImage } from './imageCompressor';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { storage } from '../firebase';
 
 interface ImageUploadProps {
-  onImageUploaded: (base64Url: string) => void;
+  onImageUploaded: (base64OrUploadedUrl: string) => void;
   onClear?: () => void;
   currentImage?: string;
   label?: string;
@@ -14,14 +17,31 @@ export default function ImageUpload({
   onClear, 
   currentImage = "", 
   label = "Upload Image Asset",
-  maxSizeMB = 2 
+  maxSizeMB = 10 
 }: ImageUploadProps) {
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const processFile = (file: File) => {
+  const uploadToFirebaseStorage = async (base64DataUrl: string, originalName: string): Promise<string> => {
+    const fileExtension = originalName.split('.').pop() || 'jpg';
+    const uniqueId = Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+    const fileName = `uploads/${uniqueId}.${fileExtension}`;
+    
+    // Create reference to the storage location
+    const storageRef = ref(storage, fileName);
+    
+    // Upload the base64 string
+    await uploadString(storageRef, base64DataUrl, 'data_url');
+    
+    // Fetch the public Load URL
+    const downloadUrl = await getDownloadURL(storageRef);
+    return downloadUrl;
+  };
+
+  const processFile = async (file: File) => {
     if (!file) return;
 
     // Type validation
@@ -30,32 +50,40 @@ export default function ImageUpload({
       return;
     }
 
-    // Size check
-    const fileSizeMB = file.size / (1024 * 1024);
-    if (fileSizeMB > maxSizeMB) {
-      setError(`Image size exceeds ${maxSizeMB}MB limit. Please compress the file.`);
-      return;
-    }
-
     setError(null);
     setLoading(true);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        onImageUploaded(reader.result);
-      } else {
-        setError('Failed to convert image to base64 encoding.');
+    try {
+      // 1. Compress image to optimal dimensions
+      setLoadingMessage('Compressing photo...');
+      const compressedBase64 = await compressImage(file, 1000, 0.75);
+
+      try {
+        // 2. Upload directly to Firebase Storage
+        setLoadingMessage('Uploading to Firebase Storage...');
+        const downloadUrl = await uploadToFirebaseStorage(compressedBase64, file.name);
+
+        // 3. Fire success handler with real load URL
+        onImageUploaded(downloadUrl);
+      } catch (storageErr: any) {
+        console.warn("Firebase Storage upload failed, falling back to Base64:", storageErr);
+        
+        // Fall back to using the compressed base64 string directly!
+        onImageUploaded(compressedBase64);
+        
+        // Alert user softly that they are saved in database offline/base64 mode
+        setError(
+          "Permission Locked: Loaded photo as high-performance offline asset. " +
+          "To enable permanent cloud asset serving, allow write access in your Firebase Console Storage Security Rules."
+        );
       }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      setError(err?.message || 'Error processing and uploading photo.');
+    } finally {
       setLoading(false);
-    };
-
-    reader.onerror = () => {
-      setError('Error reading file. Please try a different photo.');
-      setLoading(false);
-    };
-
-    reader.readAsDataURL(file);
+      setLoadingMessage('');
+    }
   };
 
   const handleDrag = (e: React.DragEvent) => {
@@ -106,30 +134,44 @@ export default function ImageUpload({
           <img 
             src={currentImage} 
             alt="Uploaded Preview" 
-            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+            className="w-full h-full object-cover transition-transform duration-300"
           />
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={handleAreaClick}
-              className="px-3.5 py-1.5 bg-neutral-900/90 text-amber-400 border border-amber-400/30 hover:border-amber-400 rounded-lg text-[10px] font-bold uppercase tracking-wider transition cursor-pointer"
-            >
-              Replace Photo
-            </button>
-            {onClear && (
+          
+          {/* ALWAYS VISIBLE MOBILE-FRIENDLY OVERLAY CONTROLS (No Hover Dependency) */}
+          <div className="absolute inset-x-0 bottom-0 bg-neutral-950/90 backdrop-blur-md border-t border-neutral-800 p-2.5 flex items-center justify-between gap-3 animate-slideUp">
+            <span className="bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[8px] uppercase tracking-widest font-bold py-1 px-2.5 rounded shadow-sm">
+              Ready & Stored
+            </span>
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={onClear}
-                className="p-1.5 bg-red-950/90 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white rounded-full transition cursor-pointer font-bold"
-                title="Remove Asset"
+                onClick={handleAreaClick}
+                disabled={loading}
+                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-450 disabled:opacity-50 text-neutral-950 rounded-lg text-[10px] font-bold uppercase tracking-wider transition cursor-pointer"
               >
-                <X className="h-4 w-4" />
+                {loading ? 'Uploading...' : 'Replace Photo'}
               </button>
-            )}
+              {onClear && (
+                <button
+                  type="button"
+                  onClick={onClear}
+                  disabled={loading}
+                  className="p-1.5 bg-red-950 border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition cursor-pointer font-bold"
+                  title="Remove Asset"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
-          <span className="absolute bottom-2.5 left-2.5 bg-black/85 border border-amber-500/30 text-amber-400 text-[8px] uppercase tracking-widest font-bold py-1 px-2.5 rounded shadow">
-            Dimensions Verified
-          </span>
+          
+          <input 
+            type="file" 
+            ref={fileInputRef}
+            onChange={handleChange}
+            accept="image/*"
+            className="hidden" 
+          />
         </div>
       ) : (
         <div
@@ -152,22 +194,24 @@ export default function ImageUpload({
             className="hidden" 
           />
 
-          <div className={`p-4 rounded-full border bg-neutral-900 shadow ${
+          <div className={`p-4 rounded-full border bg-neutral-900 shadow-lg ${
             dragActive ? 'border-amber-400 text-amber-400 scale-110' : 'border-neutral-800 text-neutral-400'
           } transition-all`}>
             {loading ? (
               <div className="h-5 w-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
             ) : (
-              <Upload className="h-5 w-5" />
+              <Upload className="h-5 w-5 text-amber-500" />
             )}
           </div>
 
           <div className="space-y-1">
             <p className="text-[11px] font-bold text-neutral-800 dark:text-neutral-350 tracking-wide">
-              {dragActive ? "Drop your photo master to load..." : "Drag & Drop Image or Click to Browse"}
+              {loading 
+                ? (loadingMessage || "Compressing & uploading...") 
+                : (dragActive ? "Drop your photo master to load..." : "Drag & Drop Image or Click to Browse")}
             </p>
             <p className="text-[9px] text-neutral-400 tracking-normal font-light">
-              Supports JPEG, PNG, WEBP (Max {maxSizeMB}MB)
+              We process, compress and store directly to Cloud Storage (Max {maxSizeMB}MB)
             </p>
           </div>
 
