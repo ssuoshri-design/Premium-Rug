@@ -37,6 +37,7 @@ export default function Home() {
     reviews, 
     currency, 
     setSelectedProductId,
+    showcaseProjects,
     isFirebaseLoading,
     currentUser,
     isAdminUser,
@@ -618,79 +619,99 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Pinterest-like grid of aesthetic room settings */}
-          <div className="grid grid-cols-2 md:grid-cols-12 gap-5 items-start">
-            
-            <div className="md:col-span-4 space-y-5">
-              <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-[4/5] bg-zinc-100">
-                <img 
-                  src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=700" 
-                  alt="Aesthetic Living Room" 
-                  className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-5">
-                  <span className="text-[10px] font-serif text-white tracking-widest uppercase">Thane Penthouse Studio</span>
+          {/* Dynamic dynamic/static grid of aesthetic room settings */}
+          {showcaseProjects && showcaseProjects.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {showcaseProjects.slice(0, 6).map((proj) => (
+                <div key={proj.id} className="relative group overflow-hidden rounded-2xl shadow-md aspect-video md:aspect-[4/3] bg-zinc-150 border border-sand/30 dark:border-neutral-900 group">
+                  <img 
+                    src={proj.image} 
+                    alt={proj.title} 
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 bg-neutral-900/85 backdrop-blur-sm border-t border-white/5 p-4 text-left transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 text-white">
+                    <span className="text-[8px] font-sans font-extrabold text-amber-400 bg-black/40 px-2 py-0.5 rounded-md w-fit mb-1.5 uppercase tracking-widest block">{proj.category}</span>
+                    <h4 className="text-xs font-serif font-bold uppercase tracking-wider">{proj.title}</h4>
+                    <p className="text-[10px] text-zinc-300 font-sans tracking-wide truncate mt-0.5">{proj.description}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-square bg-zinc-100">
-                <img 
-                  src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=700" 
-                  alt="Luxury Carpet Living Room" 
-                  className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-5">
-                  <span className="text-[10px] font-serif text-white tracking-widest uppercase">Colorado Ski Lodge</span>
-                </div>
-              </div>
+              ))}
             </div>
+          ) : (
+            /* Pinterest-like grid of aesthetic room settings (Static Fallback) */
+            <div className="grid grid-cols-2 md:grid-cols-12 gap-5 items-start">
+              
+              <div className="md:col-span-4 space-y-5">
+                <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-[4/5] bg-zinc-100">
+                  <img 
+                    src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=700" 
+                    alt="Aesthetic Living Room" 
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-5">
+                    <span className="text-[10px] font-serif text-white tracking-widest uppercase">Thane Penthouse Studio</span>
+                  </div>
+                </div>
+                <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-square bg-zinc-100">
+                  <img 
+                    src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=700" 
+                    alt="Luxury Carpet Living Room" 
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-5">
+                    <span className="text-[10px] font-serif text-white tracking-widest uppercase">Colorado Ski Lodge</span>
+                  </div>
+                </div>
+              </div>
 
-            <div className="md:col-span-4 space-y-5">
-              <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-square bg-neutral-100 dark:bg-neutral-900 animate-pulse" style={{ animationDuration: '4s' }}>
-                <img 
-                  src="https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?auto=format&fit=crop&q=80&w=700" 
-                  alt="Modern Sofa Lounge" 
-                  className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-5">
-                  <span className="text-[10px] font-serif text-white tracking-widest uppercase">Beverly Hills Lounge</span>
+              <div className="md:col-span-4 space-y-5">
+                <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-square bg-neutral-100 dark:bg-neutral-900 animate-pulse" style={{ animationDuration: '4s' }}>
+                  <img 
+                    src="https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?auto=format&fit=crop&q=80&w=700" 
+                    alt="Modern Sofa Lounge" 
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-5">
+                    <span className="text-[10px] font-serif text-white tracking-widest uppercase">Beverly Hills Lounge</span>
+                  </div>
+                </div>
+                <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-[4/5] bg-zinc-100">
+                  <img 
+                    src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=700" 
+                    alt="Custom Atelier Studio Rug" 
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-5">
+                    <span className="text-[10px] font-serif text-white tracking-widest uppercase">Bespoke Living Corner</span>
+                  </div>
                 </div>
               </div>
-              <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-[4/5] bg-zinc-100">
-                <img 
-                  src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=700" 
-                  alt="Custom Atelier Studio Rug" 
-                  className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-5">
-                  <span className="text-[10px] font-serif text-white tracking-widest uppercase">Bespoke Living Corner</span>
+
+              <div className="md:col-span-4 space-y-5">
+                <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-[3/4] bg-zinc-100">
+                  <img 
+                    src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=700" 
+                    alt="Grand Dining Area" 
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-5">
+                    <span className="text-[10px] font-serif text-white tracking-widest uppercase">Dallas Dining Hall</span>
+                  </div>
+                </div>
+                <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-[4/3] bg-zinc-100">
+                  <img 
+                    src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=700" 
+                    alt="Contemporary Master Bed" 
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-5">
+                    <span className="text-[10px] font-serif text-white tracking-widest uppercase">Mumbai Suite</span>
+                  </div>
                 </div>
               </div>
+
             </div>
-
-            <div className="md:col-span-4 space-y-5">
-              <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-[3/4] bg-zinc-100">
-                <img 
-                  src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=700" 
-                  alt="Grand Dining Area" 
-                  className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-5">
-                  <span className="text-[10px] font-serif text-white tracking-widest uppercase">Dallas Dining Hall</span>
-                </div>
-              </div>
-              <div className="relative group overflow-hidden rounded-2xl shadow-sm aspect-[4/3] bg-zinc-100">
-                <img 
-                  src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=700" 
-                  alt="Contemporary Master Bed" 
-                  className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-neutral-900/30 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-5">
-                  <span className="text-[10px] font-serif text-white tracking-widest uppercase">Mumbai Suite</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
+          )}
         </div>
       </section>
 

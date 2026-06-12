@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import ImageUpload from '../components/ImageUpload';
 import { 
@@ -19,21 +19,35 @@ export default function CustomRug() {
   const { submitCustomRugRequest } = useApp();
 
   // Interactive config selections
-  const [selectedShape, setSelectedShape] = useState('Rectangular');
-  const [selectedColor, setSelectedColor] = useState('Beige & Gold');
-  const [customSize, setCustomSize] = useState('8x10 ft (240x300 cm)');
-  const [patternType, setPatternType] = useState('Modern Geometric');
+  const [selectedShape, setSelectedShape] = useState(() => localStorage.getItem('cr_selectedShape') || 'Rectangular');
+  const [selectedColor, setSelectedColor] = useState(() => localStorage.getItem('cr_selectedColor') || 'Beige & Gold');
+  const [customSize, setCustomSize] = useState(() => localStorage.getItem('cr_customSize') || '8x10 ft (240x300 cm)');
+  const [patternType, setPatternType] = useState(() => localStorage.getItem('cr_patternType') || 'Modern Geometric');
   
   // Contact state
-  const [patronName, setPatronName] = useState('');
-  const [patronPhone, setPatronPhone] = useState('');
-  const [patronEmail, setPatronEmail] = useState('');
-  const [patronCountry, setPatronCountry] = useState('India');
-  const [projectDetails, setProjectDetails] = useState('');
-  const [referenceImgUrl, setReferenceImgUrl] = useState('');
+  const [patronName, setPatronName] = useState(() => localStorage.getItem('cr_patronName') || '');
+  const [patronPhone, setPatronPhone] = useState(() => localStorage.getItem('cr_patronPhone') || '');
+  const [patronEmail, setPatronEmail] = useState(() => localStorage.getItem('cr_patronEmail') || '');
+  const [patronCountry, setPatronCountry] = useState(() => localStorage.getItem('cr_patronCountry') || 'India');
+  const [projectDetails, setProjectDetails] = useState(() => localStorage.getItem('cr_projectDetails') || '');
+  const [referenceImgUrl, setReferenceImgUrl] = useState(() => localStorage.getItem('cr_referenceImgUrl') || '');
 
   const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(false);
+
+  // Auto-save form contents to localStorage to persist across refreshes
+  useEffect(() => {
+    localStorage.setItem('cr_selectedShape', selectedShape);
+    localStorage.setItem('cr_selectedColor', selectedColor);
+    localStorage.setItem('cr_customSize', customSize);
+    localStorage.setItem('cr_patternType', patternType);
+    localStorage.setItem('cr_patronName', patronName);
+    localStorage.setItem('cr_patronPhone', patronPhone);
+    localStorage.setItem('cr_patronEmail', patronEmail);
+    localStorage.setItem('cr_patronCountry', patronCountry);
+    localStorage.setItem('cr_projectDetails', projectDetails);
+    localStorage.setItem('cr_referenceImgUrl', referenceImgUrl);
+  }, [selectedShape, selectedColor, customSize, patternType, patronName, patronPhone, patronEmail, patronCountry, projectDetails, referenceImgUrl]);
 
   const shapes = [
     { name: 'Rectangular', icon: '▭', desc: 'Standard room layout' },
@@ -59,25 +73,31 @@ export default function CustomRug() {
       `Reference Image Url: ${referenceImgUrl || 'None Attached'}\n` +
       `Contact Details: ${projectDetails}`;
 
-    try {
-      await submitCustomRugRequest({
-        name: patronName,
-        phone: patronPhone,
-        email: patronEmail,
-        country: patronCountry,
-        desiredSize: customSize,
-        desiredColor: selectedColor,
-        desiredShape: selectedShape,
-        referenceImage: referenceImgUrl,
-        projectDetails: completeDetailsText
-      });
-      setCompleted(true);
-      setPatronName('');
-      setPatronPhone('');
-      setPatronEmail('');
-      setProjectDetails('');
-      setReferenceImgUrl('');
-    } catch (err) {
+      try {
+        await submitCustomRugRequest({
+          name: patronName,
+          phone: patronPhone,
+          email: patronEmail,
+          country: patronCountry,
+          desiredSize: customSize,
+          desiredColor: selectedColor,
+          desiredShape: selectedShape,
+          referenceImage: referenceImgUrl,
+          projectDetails: completeDetailsText
+        });
+        setCompleted(true);
+        setPatronName('');
+        setPatronPhone('');
+        setPatronEmail('');
+        setProjectDetails('');
+        setReferenceImgUrl('');
+        // Clear local storage upon successful completion
+        localStorage.removeItem('cr_patronName');
+        localStorage.removeItem('cr_patronPhone');
+        localStorage.removeItem('cr_patronEmail');
+        localStorage.removeItem('cr_projectDetails');
+        localStorage.removeItem('cr_referenceImgUrl');
+      } catch (err) {
       console.error("Custom rug request failed: ", err);
     } finally {
       setLoading(false);
@@ -278,7 +298,7 @@ export default function CustomRug() {
                   
                   <ImageUpload 
                     onImageUploaded={(b64) => setReferenceImgUrl(b64)}
-                    currentImage={referenceImgUrl.startsWith('data:image') ? referenceImgUrl : ''}
+                    currentImage={referenceImgUrl}
                     onClear={() => setReferenceImgUrl('')}
                     label="Upload Photo from Device Gallery"
                     maxSizeMB={10}
@@ -288,11 +308,16 @@ export default function CustomRug() {
                     <span className="text-[10px] font-sans font-bold tracking-wider text-neutral-400 block uppercase">Or Paste Public Web link/Pinterest Pin URL</span>
                     <input 
                       type="url" 
-                      value={referenceImgUrl.startsWith('data:image') ? '' : referenceImgUrl}
+                      value={(referenceImgUrl.startsWith('data:image') || referenceImgUrl.includes('firebasestorage')) ? '' : referenceImgUrl}
                       onChange={(e) => setReferenceImgUrl(e.target.value)}
                       placeholder="E.g. https://pinterest.com/pin/xyz.jpg" 
                       className="w-full bg-white dark:bg-neutral-900 border border-sand dark:border-neutral-850 rounded-xl p-3 text-xs outline-none focus:border-muted-gold transition-colors font-sans"
                     />
+                    {referenceImgUrl && (
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-sans block pt-1 font-bold">
+                        ✓ Reference design photo loaded successfully.
+                      </span>
+                    )}
                   </div>
                 </div>
 

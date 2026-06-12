@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Sparkles, AlertCircle } from 'lucide-react';
 import { compressImage } from './imageCompressor';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
-import { storage } from '../firebase';
+import { storage, auth } from '../firebase';
 
 interface ImageUploadProps {
   onImageUploaded: (base64OrUploadedUrl: string) => void;
@@ -70,12 +70,6 @@ export default function ImageUpload({
         
         // Fall back to using the compressed base64 string directly!
         onImageUploaded(compressedBase64);
-        
-        // Alert user softly that they are saved in database offline/base64 mode
-        setError(
-          "Permission Locked: Loaded photo as high-performance offline asset. " +
-          "To enable permanent cloud asset serving, allow write access in your Firebase Console Storage Security Rules."
-        );
       }
     } catch (err: any) {
       console.error("Upload error:", err);

@@ -41,6 +41,7 @@ export default function Admin() {
     isAdminUser, 
     loginAdminUser, 
     logoutAdmin,
+    signInWithGoogle,
     products, 
     categories, 
     inquiries, 
@@ -414,8 +415,8 @@ export default function Admin() {
               <h1 className="text-2xl font-serif font-light tracking-wide text-zinc-900 dark:text-champagne">
                 Welcome Back
               </h1>
-              <p className="text-xs text-neutral-500 max-w-xs mx-auto">
-                Please enter your password to open the store management dashboard.
+              <p className="text-xs text-neutral-550 dark:text-neutral-400 max-w-xs mx-auto leading-relaxed">
+                Please authenticate using Google or Enter your administrative passcode to manage the showroom.
               </p>
             </motion.div>
           </div>
@@ -438,16 +439,66 @@ export default function Admin() {
               </motion.div>
             )}
 
-            <form onSubmit={handleAdminSignIn} className="space-y-5">
+            {/* Google Authentication Button - Live syncing */}
+            <div className="space-y-3">
+              <span className="text-[10px] font-sans font-extrabold tracking-widest text-neutral-400 dark:text-neutral-500 uppercase block text-left">
+                Recommended for Cloud Saving
+              </span>
+              <motion.button 
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                type="button" 
+                onClick={async () => {
+                  setLoginError(null);
+                  setSigningIn(true);
+                  try {
+                    await signInWithGoogle();
+                  } catch (err: any) {
+                    setLoginError(err.message || 'Google Auth verification failed.');
+                  } finally {
+                    setSigningIn(false);
+                  }
+                }}
+                disabled={signingIn}
+                className="w-full bg-amber-400 hover:bg-amber-500 dark:bg-muted-gold dark:hover:bg-champagne text-zinc-950 font-sans text-xs sm:text-sm font-bold tracking-widest uppercase py-4 rounded-xl shadow-lg transition duration-300 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+              >
+                <svg className="h-4.5 w-4.5 shrink-0" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" opacity="0.85"/>
+                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" opacity="0.75"/>
+                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" opacity="0.95"/>
+                </svg>
+                <span>Google Admin Sign In</span>
+              </motion.button>
+              <p className="text-[10px] text-neutral-400 dark:text-neutral-500 text-left font-sans font-light leading-normal leading-relaxed">
+                * Sign in using your registered administrator Gmail to authorize cloud uploads and write directly to the database.
+              </p>
+            </div>
+
+             <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-neutral-200 dark:border-neutral-800" />
+              </div>
+              <div className="relative flex justify-center text-[9px] uppercase">
+                <span className="bg-white dark:bg-zinc-900 px-3 text-neutral-400 dark:text-neutral-500 font-bold tracking-widest font-sans">
+                  Or Administrative Passcode
+                </span>
+              </div>
+            </div>
+
+            <form onSubmit={handleAdminSignIn} className="space-y-4">
               <motion.div 
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
                 className="space-y-1.5 text-left"
               >
-                <label className="text-xs font-sans font-bold tracking-wider text-neutral-500 dark:text-neutral-400 uppercase">
-                  Password (Hint: admin@2026)
-                </label>
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-sans font-bold tracking-wider text-neutral-500 dark:text-neutral-400 uppercase">
+                    Passcode
+                  </label>
+                  <span className="text-[9px] text-amber-500 font-bold tracking-wider uppercase font-sans">Hint: admin@2026</span>
+                </div>
                 <input 
                   type="password" 
                   value={password} 
@@ -456,23 +507,26 @@ export default function Admin() {
                   required
                   className="w-full bg-stone-50 dark:bg-neutral-950 text-neutral-800 dark:text-stone-100 border border-sand dark:border-neutral-800 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-muted-gold dark:focus:border-champagne transition duration-300"
                 />
+                <p className="text-[9px] text-neutral-400 dark:text-neutral-500 leading-normal italic font-sans font-light leading-snug">
+                  * Passcode login runs in local-only sandbox mode. Uploads & edits won't persist across refreshes.
+                </p>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="pt-2"
+                className="pt-1"
               >
                 <motion.button 
-                  whileHover={{ scale: 1.01, filter: "brightness(1.05)" }}
+                  whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit" 
                   disabled={signingIn}
-                  className="w-full bg-zinc-950 hover:bg-black dark:bg-muted-gold text-white dark:text-neutral-950 font-sans text-xs sm:text-sm font-bold tracking-widest uppercase py-4 rounded-xl shadow-lg transition duration-300 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full bg-zinc-950 hover:bg-black text-white font-sans text-xs sm:text-sm font-bold tracking-widest uppercase py-3.5 rounded-xl shadow transition duration-300 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Lock className="h-4 w-4" />
-                  <span>{signingIn ? 'Checking password...' : 'Log In'}</span>
+                  <span>{signingIn ? 'Validating...' : 'Administrative Login'}</span>
                 </motion.button>
               </motion.div>
             </form>
@@ -502,7 +556,12 @@ export default function Admin() {
             <span className="text-[9px] font-sans font-extrabold tracking-[0.3em] uppercase text-amber-500">WEAVERS COOPERATIVE PLATFORM MONITOR</span>
             <h1 className="text-2xl font-serif font-light tracking-tight text-neutral-900 dark:text-stone-100">Atelier Suite Board</h1>
             <p className="text-[11px] font-sans text-neutral-400 leading-normal">
-              Supervisor Coord: <span className="text-amber-500 font-medium">{currentUser.email}</span> • Sync State: <span className="text-emerald-400 font-bold">● Active Stream</span>
+              Supervisor Coord: <span className="text-amber-500 font-medium">{currentUser?.email}</span> • Sync State:{' '}
+              {currentUser?.uid === 'mock_admin_uid' ? (
+                <span className="text-amber-400 font-bold font-sans">⚠️ Local Sandbox (Changes won't save permanently — Sign in with Google for live Sync)</span>
+              ) : (
+                <span className="text-emerald-400 font-bold text-[10px] font-mono">● Live Cloud Sync Mode</span>
+              )}
             </p>
           </div>
           <button 

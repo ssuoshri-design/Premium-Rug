@@ -58,6 +58,7 @@ interface AppContextType {
   currency: 'INR' | 'USD';
   setCurrency: (currency: 'INR' | 'USD') => void;
   detectedCountry: string;
+  setDetectedCountry: (country: string) => void;
 
   // Real-time Data
   products: Product[];
@@ -175,6 +176,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [adminProfile, setAdminProfile] = useState<AdminUser | null>(null);
   const [isFirebaseLoading, setIsFirebaseLoading] = useState<boolean>(true);
   const [isDbSeeded, setIsDbSeeded] = useState<boolean>(false);
+
+  const isSandboxMode = isAdminUser && (!currentUser || currentUser.uid === 'mock_admin_uid');
 
   // Synchronize dynamic URL page navigation for robust SEO back-buttons
   const setCurrentPage = (page: string) => {
@@ -443,89 +446,187 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      setInquiries([
-        {
-          id: 'mock_inq_1',
-          name: 'Sophia Loren',
-          phone: '+1 (310) 555-0192',
-          email: 'sophia@beverlyestates.com',
-          country: 'United States',
-          source: 'Website Form',
-          productInterest: 'Emperor Obsidian Black',
-          message: 'Interested in the Emperor Obsidian block for our master lounge.',
-          status: 'new',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'mock_inq_2',
-          name: 'Rajesh Mehta',
-          phone: '+91 98220 11223',
-          email: 'rajesh@mehtacorp.in',
-          country: 'India',
-          source: 'WhatsApp Quick Inquiry',
-          productInterest: 'General Luxury Line',
-          message: 'Requested a complimentary catalog and discussions about wool shag rug swatches.',
-          status: 'contacted',
-          createdAt: new Date(Date.now() - 3600000).toISOString()
-        }
-      ]);
-      setCustomRequests([
-        {
-          id: 'mock_req_1',
-          name: 'Marcus Aurelius',
-          phone: '+39 06 123456',
-          email: 'philosopher@rome.it',
-          country: 'Italy',
-          desiredSize: '12x15 ft',
-          desiredColor: 'Deep Crimson and Amber Gold',
-          desiredShape: 'Rectangular',
-          extraSpecs: 'Fully hand-knotted 150-knot precision weave.',
-          imageUrl: 'https://images.unsplash.com/photo-1628592102751-ba83b02d42d6',
-          status: 'design_phase',
-          createdAt: new Date().toISOString()
-        }
-      ]);
-      setOrders([
-        {
-          id: 'mock_ord_1',
-          customerName: 'Aria Thompson',
-          phone: '+44 20 7946 0958',
-          email: 'aria.t@londonhomes.co.uk',
-          country: 'United Kingdom',
-          address: '42 Baker St, London NW1 6XE',
-          items: [
-            {
-              productId: 'p1',
-              productName: 'Emperor Obsidian Black',
-              quantity: 1,
-              selectedSize: '8x10 ft',
-              selectedColor: 'Obsidian Black / Gold',
-              price: 4500
-            }
-          ],
-          totalPrice: 4500,
-          currency: 'USD',
-          paymentStatus: 'pending',
-          orderStatus: 'processed',
-          orderDate: new Date().toISOString(),
-          notes: 'Deliver prior to weekend.'
-        }
-      ]);
-      setSubscribers([
-        { email: 'ssuoshri@gmail.com', joinedAt: new Date().toISOString() },
-        { email: 'curator@metmuseum.org', joinedAt: new Date().toISOString() }
-      ]);
-      setAdminUsers([
-        { email: 'ssuoshri@gmail.com', role: 'Super Admin', name: 'Mohd Sarik' }
-      ]);
-      setVisitorLogs([
-        { date: new Date().toISOString().split('T')[0], count: 154, whatsappInquiries: 3 }
-      ]);
-      return;
+    if (isSandboxMode) {
+      // --- LOAD SANDBOX SESSIONS FROM LOCALSTORAGE OR HIGH-FIDELITY DEFAULT SEED VALUES ---
+      
+      // 1. Inquiries
+      const savedInq = localStorage.getItem('sandbox_inquiries');
+      if (savedInq) {
+        setInquiries(JSON.parse(savedInq));
+      } else {
+        const defaultInq = [
+          {
+            id: "inq-001",
+            name: "Ananya Sharma",
+            phone: "+91 83568 64659",
+            email: "ananya.sharma@example.com",
+            country: "India",
+            source: "Website Product Inquiry",
+            productInterest: "Aurelia Gold Silk Weave",
+            message: "Interested in a customized size of Aurelia Gold Silk Weave for our duplex in Bandra.",
+            createdAt: new Date(Date.now() - 4 * 3600 * 1000).toISOString(),
+            status: "new"
+          },
+          {
+            id: "inq-002",
+            name: "David K.",
+            phone: "+1 415 555 2671",
+            email: "david.k@example.net",
+            country: "United States",
+            source: "Showroom Inquiry",
+            productInterest: "Emperor's Obsidian Mandala",
+            message: "Can we have this shipped to California? Is there any local custom duties fee?",
+            createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+            status: "contacted",
+            notes: "Sent quote via email on air cargo shipping."
+          }
+        ];
+        setInquiries(defaultInq);
+        localStorage.setItem('sandbox_inquiries', JSON.stringify(defaultInq));
+      }
+
+      // 2. Custom rug requests
+      const savedCust = localStorage.getItem('sandbox_custom_requests');
+      if (savedCust) {
+        setCustomRequests(JSON.parse(savedCust));
+      } else {
+        const defaultCust = [
+          {
+            id: "req-001",
+            name: "Vikram Malhotra",
+            phone: "+91 91234 56789",
+            email: "vikram.malhotra@yahoo.com",
+            country: "India",
+            desiredSize: "10x14 ft",
+            desiredColor: "Emerald Green & Champagne Gold",
+            desiredShape: "Rectangular",
+            projectDetails: "Want raised silk patterns for the emerald color wash backdrop.",
+            createdAt: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
+            status: "pending"
+          },
+          {
+            id: "req-002",
+            name: "Elena Rostova",
+            phone: "+1 646 555 9012",
+            email: "elena.r@luxuryinteriors.com",
+            country: "United States",
+            desiredSize: "Circular 12ft",
+            desiredColor: "Sand Dunes Beige & Off-white",
+            desiredShape: "Circular",
+            projectDetails: "Textured shag rug similar to Marrakesh, but in custom beige tones.",
+            createdAt: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(),
+            status: "design_phase",
+            notes: "Artisans in Bhadohi are currently working on physical loop sample."
+          }
+        ];
+        setCustomRequests(defaultCust);
+        localStorage.setItem('sandbox_custom_requests', JSON.stringify(defaultCust));
+      }
+
+      // 3. Orders/Estimates
+      const savedOrd = localStorage.getItem('sandbox_orders');
+      if (savedOrd) {
+        setOrders(JSON.parse(savedOrd));
+      } else {
+        const defaultOrd = [
+          {
+            id: "ord-001",
+            customerName: "Sanjay Singhania",
+            phone: "+91 99887 76655",
+            email: "sanjay@singhania.co",
+            country: "India",
+            address: "Flat 42B, Oberoi Towers, Worli, Mumbai - 400018",
+            orderStatus: "processed",
+            paymentStatus: "paid",
+            orderDate: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(),
+            totalPrice: 145000,
+            currency: "INR",
+            items: [
+              {
+                productId: "prc-001",
+                productName: "Aurelia Gold Silk Weave",
+                quantity: 1,
+                selectedSize: "6x9 ft (180x270 cm)",
+                selectedColor: "Gold & Ivory",
+                price: 145000
+              }
+            ]
+          },
+          {
+            id: "ord-002",
+            customerName: "Charles Dupont",
+            phone: "+1 202 555 0143",
+            email: "charles.dupont@embassy.org",
+            country: "United States",
+            address: "3100 Massachusetts Ave NW, Washington, DC 20008",
+            orderStatus: "pending",
+            paymentStatus: "pending",
+            orderDate: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
+            totalPrice: 1100,
+            currency: "USD",
+            items: [
+              {
+                productId: "prc-002",
+                productName: "Emperor's Obsidian Mandala",
+                quantity: 1,
+                selectedSize: "5x8 ft (150x240 cm)",
+                selectedColor: "Obsidian Black & Gold",
+                price: 1100
+              }
+            ]
+          }
+        ];
+        setOrders(defaultOrd);
+        localStorage.setItem('sandbox_orders', JSON.stringify(defaultOrd));
+      }
+
+      // 4. Newsletter Subscribers Roster
+      const savedSubs = localStorage.getItem('sandbox_subscribers');
+      if (savedSubs) {
+        setSubscribers(JSON.parse(savedSubs));
+      } else {
+        const defaultSubs = [
+          { email: "patron1@example.com", subscribedAt: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString() },
+          { email: "designer@mumbaiinteriors.in", subscribedAt: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString() }
+        ];
+        setSubscribers(defaultSubs);
+        localStorage.setItem('sandbox_subscribers', JSON.stringify(defaultSubs));
+      }
+
+      // 5. Admin Users List
+      const savedAdms = localStorage.getItem('sandbox_admin_users');
+      if (savedAdms) {
+        setAdminUsers(JSON.parse(savedAdms));
+      } else {
+        const defaultAdms = [
+          { email: "ssuoshri@gmail.com", role: "Super Admin", name: "Mohd Sarik" },
+          { email: "manager@premiumrugcollection.com", role: "Manager", name: "Amit Joshi" }
+        ];
+        setAdminUsers(defaultAdms);
+        localStorage.setItem('sandbox_admin_users', JSON.stringify(defaultAdms));
+      }
+
+      // 6. Analytics Visitor Logs
+      const savedLogs = localStorage.getItem('sandbox_visitor_logs');
+      if (savedLogs) {
+        setVisitorLogs(JSON.parse(savedLogs));
+      } else {
+        const defaultLogs = Array.from({ length: 7 }, (_, i) => {
+          const date = new Date(Date.now() - i * 24 * 3600 * 1000).toISOString().split('T')[0];
+          return {
+            date,
+            count: 140 + Math.floor(Math.random() * 80),
+            whatsappInquiries: 3 + Math.floor(Math.random() * 5)
+          };
+        });
+        setVisitorLogs(defaultLogs);
+        localStorage.setItem('sandbox_visitor_logs', JSON.stringify(defaultLogs));
+      }
+
+      return; // Stop here, do not create Firestore subscriptions
     }
 
+    // Real-time synchronization of inquiries, orders, etc. directly from live Firestore database
     // Listen to inquiries
     const inqSub = onSnapshot(collection(db, 'customer_inquiries'), (snapshot) => {
       const list: CustomerInquiry[] = [];
@@ -676,11 +777,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       status: 'new'
     };
 
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      if (isAdminUser) {
-        setInquiries(prev => [item, ...prev]);
-      }
+    if (isSandboxMode) {
+      const updated = [item, ...inquiries];
+      setInquiries(updated);
+      localStorage.setItem('sandbox_inquiries', JSON.stringify(updated));
       return;
     }
 
@@ -700,11 +800,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       status: 'pending'
     };
 
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      if (isAdminUser) {
-        setCustomRequests(prev => [item, ...prev]);
-      }
+    if (isSandboxMode) {
+      const updated = [item, ...customRequests];
+      setCustomRequests(updated);
+      localStorage.setItem('sandbox_custom_requests', JSON.stringify(updated));
       return;
     }
 
@@ -728,9 +827,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       status: 'pending' // Admin must approve it inside dashboard
     };
 
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      setReviews(prev => [item, ...prev]);
+    if (isSandboxMode) {
+      const updated = [item, ...reviews];
+      setReviews(updated);
       return;
     }
 
@@ -745,11 +844,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail) return false;
     
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      if (isAdminUser) {
-        setSubscribers(prev => [{ email: cleanEmail, joinedAt: new Date().toISOString() }, ...prev]);
-      }
+    if (isSandboxMode) {
+      const item = { email: cleanEmail, subscribedAt: new Date().toISOString() };
+      const updated = [item, ...subscribers];
+      setSubscribers(updated);
+      localStorage.setItem('sandbox_subscribers', JSON.stringify(updated));
       return true;
     }
 
@@ -761,6 +860,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return true;
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `newsletter_subscribers/${cleanEmail}`);
+      return false;
     }
   };
 
@@ -796,11 +896,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       notes
     };
 
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      if (isAdminUser) {
-        setOrders(prev => [order, ...prev]);
-      }
+    if (isSandboxMode) {
+      const updated = [order, ...orders];
+      setOrders(updated);
+      localStorage.setItem('sandbox_orders', JSON.stringify(updated));
       clearCart();
       return;
     }
@@ -821,9 +920,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       id,
       createdAt: new Date().toISOString()
     };
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      setProducts(prev => [complete, ...prev]);
+    if (isSandboxMode) {
+      setProducts([complete, ...products]);
       return;
     }
     try {
@@ -834,9 +932,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const editProduct = async (id: string, p: Partial<Product>) => {
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      setProducts(prev => prev.map(item => item.id === id ? { ...item, ...p } : item));
+    if (isSandboxMode) {
+      setProducts(products.map(item => item.id === id ? { ...item, ...p } as Product : item));
       return;
     }
     try {
@@ -847,9 +944,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteProduct = async (id: string) => {
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      setProducts(prev => prev.filter(item => item.id !== id));
+    if (isSandboxMode) {
+      setProducts(products.filter(item => item.id !== id));
       return;
     }
     try {
@@ -860,9 +956,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateInquiryStatus = async (id: string, status: CustomerInquiry['status'], notes?: string) => {
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      setInquiries(prev => prev.map(item => item.id === id ? { ...item, status, ...(notes !== undefined ? { notes } : {}) } : item));
+    if (isSandboxMode) {
+      const updated = inquiries.map(item => {
+        if (item.id === id) {
+          const fields: CustomerInquiry = { ...item, status };
+          if (notes !== undefined) fields.notes = notes;
+          return fields;
+        }
+        return item;
+      });
+      setInquiries(updated);
+      localStorage.setItem('sandbox_inquiries', JSON.stringify(updated));
       return;
     }
     try {
@@ -875,9 +979,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateCustomRequestStatus = async (id: string, status: CustomRugRequest['status'], notes?: string) => {
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      setCustomRequests(prev => prev.map(item => item.id === id ? { ...item, status, ...(notes !== undefined ? { notes } : {}) } : item));
+    if (isSandboxMode) {
+      const updated = customRequests.map(item => {
+        if (item.id === id) {
+          const fields: CustomRugRequest = { ...item, status };
+          if (notes !== undefined) fields.notes = notes;
+          return fields;
+        }
+        return item;
+      });
+      setCustomRequests(updated);
+      localStorage.setItem('sandbox_custom_requests', JSON.stringify(updated));
       return;
     }
     try {
@@ -890,9 +1002,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateOrderStatus = async (id: string, status: Order['orderStatus'], trackingNumber?: string) => {
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      setOrders(prev => prev.map(item => item.id === id ? { ...item, orderStatus: status, ...(trackingNumber !== undefined ? { trackingNumber } : {}) } : item));
+    if (isSandboxMode) {
+      const updated = orders.map(item => {
+        if (item.id === id) {
+          const fields: Order = { ...item, orderStatus: status };
+          if (trackingNumber !== undefined) fields.trackingNumber = trackingNumber;
+          return fields;
+        }
+        return item;
+      });
+      setOrders(updated);
+      localStorage.setItem('sandbox_orders', JSON.stringify(updated));
       return;
     }
     try {
@@ -905,9 +1025,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateReviewStatus = async (id: string, status: CustomerReview['status']) => {
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      setReviews(prev => prev.map(item => item.id === id ? { ...item, status } : item));
+    if (isSandboxMode) {
+      setReviews(reviews.map(item => item.id === id ? { ...item, status } as CustomerReview : item));
       return;
     }
     try {
@@ -918,8 +1037,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateGlobalSettings = async (s: Partial<WebsiteSetting>) => {
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
+    if (isSandboxMode) {
       setSettings(prev => ({ ...prev, ...s }));
       return;
     }
@@ -938,9 +1056,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       id,
       createdAt: new Date().toISOString()
     };
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      setShowcaseProjects(prev => [complete, ...prev]);
+    if (isSandboxMode) {
+      setShowcaseProjects([complete, ...showcaseProjects]);
       return;
     }
     try {
@@ -951,9 +1068,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const editShowcaseProject = async (id: string, p: Partial<ShowcaseProject>) => {
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      setShowcaseProjects(prev => prev.map(item => item.id === id ? { ...item, ...p } : item));
+    if (isSandboxMode) {
+      setShowcaseProjects(showcaseProjects.map(item => item.id === id ? { ...item, ...p } as ShowcaseProject : item));
       return;
     }
     try {
@@ -964,9 +1080,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteShowcaseProject = async (id: string) => {
-    const isMock = !auth.currentUser || auth.currentUser.uid === 'mock_admin_uid';
-    if (isMock) {
-      setShowcaseProjects(prev => prev.filter(item => item.id !== id));
+    if (isSandboxMode) {
+      setShowcaseProjects(showcaseProjects.filter(item => item.id !== id));
       return;
     }
     try {
@@ -1038,6 +1153,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       currency,
       setCurrency,
       detectedCountry,
+      setDetectedCountry,
       products,
       categories,
       reviews,

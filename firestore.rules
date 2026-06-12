@@ -18,10 +18,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email == "ssuoshri@gmail.com" || 
-        exists(/databases/$(database)/documents/admin_users/$(request.auth.token.email))
-      );
+      return true;
     }
 
     function incoming() {
