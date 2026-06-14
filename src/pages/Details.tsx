@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
+import { calculateDynamicPrice, parseDimensions } from '../utils/pricing';
 import { 
   MessageSquare, 
   ArrowLeft, 
@@ -34,10 +35,22 @@ export default function Details() {
     products, 
     currency, 
     addToCart,
-    submitInquiry
+    submitInquiry,
+    settings
   } = useApp();
 
   const product = products.find(p => p.id === selectedProductId);
+
+  const sizesToRender = product?.isDynamicPricing 
+    ? [
+        { label: '4x6 ft', metric: '120 x 180 cm', room: 'Accent / Study' },
+        { label: '5x7 ft', metric: '150 x 210 cm', room: 'Foyer / Study' },
+        { label: '5x8 ft', metric: '150 x 240 cm', room: 'Lobby / Bedroom' },
+        { label: '6x9 ft', metric: '180 x 270 cm', room: 'Living Room' },
+        { label: '8x10 ft', metric: '240 x 300 cm', room: 'Dining Room' },
+        { label: '8x11 ft', metric: '240 x 330 cm', room: 'Grand Dinings' },
+      ]
+    : STANDARD_SIZES;
 
   const [activeImage, setActiveImage] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string>('');
@@ -83,8 +96,15 @@ export default function Details() {
     );
   }
 
-  const price = currency === 'INR' ? product.priceINR : product.priceUSD;
+  const price = product.isDynamicPricing
+    ? (selectedSize 
+        ? calculateDynamicPrice(selectedSize, settings.pricePerSqFt || 700, currency)
+        : calculateDynamicPrice('4x6 ft', settings.pricePerSqFt || 700, currency))
+    : (currency === 'INR' ? product.priceINR : product.priceUSD);
   const symbol = currency === 'INR' ? '₹' : '$';
+
+  const dims = product.isDynamicPricing ? parseDimensions(selectedSize) : null;
+  const area = dims ? dims.width * dims.length : 0;
 
   // Compose dynamic WhatsApp message
   const handleWhatsAppClick = () => {
@@ -346,12 +366,45 @@ export default function Details() {
             </div>
 
             {/* Price Segment */}
-            <div className="bg-soft-beige dark:bg-zinc-900 border border-sand/40 dark:border-neutral-900 p-6 rounded-2xl shadow-sm text-left">
-              <span className="text-[9px] font-sans font-bold tracking-widest uppercase text-taupe dark:text-neutral-400 block">CURRENT WEAVE VALUATION</span>
-              <div className="flex items-baseline gap-3 mt-1.5">
-                <span className="font-serif text-3xl font-bold text-muted-gold dark:text-champagne">{symbol} {price.toLocaleString()}</span>
-                <span className="text-[10px] font-sans text-neutral-400 uppercase tracking-widest">Complimentary Global Freight</span>
+            <div className="bg-soft-beige dark:bg-zinc-900 border border-sand/40 dark:border-neutral-900 p-6 rounded-2xl shadow-sm text-left space-y-4">
+              <div>
+                <span className="text-[9px] font-sans font-bold tracking-widest uppercase text-taupe dark:text-neutral-400 block">CURRENT WEAVE VALUATION</span>
+                <div className="flex items-baseline gap-3 mt-1.5 font-sans">
+                  <span className="font-serif text-3xl font-bold text-muted-gold dark:text-champagne">{symbol} {price.toLocaleString()}</span>
+                  <span className="text-[10px] font-sans text-neutral-400 uppercase tracking-widest">Complimentary Global Freight</span>
+                </div>
               </div>
+              
+              {product.isDynamicPricing && (
+                <div className="pt-3 border-t border-sand/30 dark:border-neutral-800 space-y-3 font-sans">
+                  <span className="text-[10px] font-sans font-black tracking-wider uppercase text-muted-gold block">⚡ Dynamic Pricing Breakdown</span>
+                  <div className="grid grid-cols-2 gap-2 text-xs font-sans">
+                    <div className="bg-white/40 dark:bg-neutral-950/40 p-2.5 rounded-lg border border-sand/20 dark:border-neutral-850">
+                      <span className="text-[8px] uppercase tracking-wider text-neutral-400 block font-semibold">Selected Size</span>
+                      <strong className="text-xs font-serif font-black text-neutral-800 dark:text-stone-200 block mt-0.5">{selectedSize || '4x6 ft (Smallest Size)'}</strong>
+                    </div>
+                    <div className="bg-white/40 dark:bg-neutral-950/40 p-2.5 rounded-lg border border-sand/20 dark:border-neutral-850">
+                      <span className="text-[8px] uppercase tracking-wider text-neutral-400 block font-semibold">Total Area</span>
+                      <strong className="text-xs font-serif font-black text-neutral-850 dark:text-stone-200 block mt-0.5">{dims ? `${dims.width * dims.length} sq ft` : '24 sq ft'}</strong>
+                    </div>
+                    <div className="bg-white/40 dark:bg-neutral-950/40 p-2.5 rounded-lg border border-sand/20 dark:border-neutral-850">
+                      <span className="text-[8px] uppercase tracking-wider text-neutral-400 block font-semibold">Price Per Sq Ft</span>
+                      <strong className="text-xs font-serif font-bold text-muted-gold block mt-0.5">₹{(settings.pricePerSqFt || 700).toLocaleString()}</strong>
+                    </div>
+                    <div className="bg-white/40 dark:bg-neutral-950/40 p-2.5 rounded-lg border border-sand/20 dark:border-neutral-850">
+                      <span className="text-[8px] uppercase tracking-wider text-neutral-400 block font-semibold">Formulation display</span>
+                      <span className="text-[9.5px] font-mono text-neutral-550 block mt-0.5">
+                        {dims ? `${dims.width} × ${dims.length} = ${dims.width * dims.length} sq ft` : '4 × 6 = 24 sq ft'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-[#C5A059]/10 border border-[#C5A059]/25 px-3 py-2 rounded-xl text-[10px] text-neutral-600 dark:text-stone-300 font-mono text-center space-y-1">
+                    <div>{dims ? `${dims.width} × ${dims.length} = ${dims.width * dims.length} sq ft` : '4 × 6 = 24 sq ft'}</div>
+                    <div className="font-bold text-muted-gold">{dims ? `${dims.width * dims.length} sq ft × ₹${settings.pricePerSqFt || 700} = ₹${price.toLocaleString()}` : `24 sq ft × ₹${settings.pricePerSqFt || 700} = ₹${price.toLocaleString()}`}</div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Summary Brief */}
@@ -371,7 +424,7 @@ export default function Details() {
               </div>
               
               <div className="grid grid-cols-2 gap-3.5 pt-1.5 font-sans">
-                {STANDARD_SIZES.map((sz, idx) => (
+                {sizesToRender.map((sz, idx) => (
                   <button 
                     key={idx}
                     type="button"

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { GLOBAL_SETTING_DEFAULT } from '../data/seedData';
+import { calculateDynamicPrice } from '../utils/pricing';
 import { 
   MessageCircle, 
   ArrowRight, 
@@ -382,7 +383,9 @@ export default function Home() {
                 </div>
               ) : (
                 bestSellers.slice(activeCarouselIndex, activeCarouselIndex + 3).map((product, idx) => {
-                  const price = currency === 'INR' ? product.priceINR : product.priceUSD;
+                  const price = product.isDynamicPricing
+                    ? calculateDynamicPrice('4x6 ft', settings.pricePerSqFt || 700, currency)
+                    : (currency === 'INR' ? product.priceINR : product.priceUSD);
                   const symbol = currency === 'INR' ? '₹' : '$';
                   return (
                     <motion.div 

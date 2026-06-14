@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
+import { calculateDynamicPrice } from '../utils/pricing';
 
 export default function Checkout() {
   const { 
@@ -30,7 +31,8 @@ export default function Checkout() {
     currency, 
     setCurrentPage, 
     detectedCountry, 
-    submitOrderEstimate 
+    submitOrderEstimate,
+    settings
   } = useApp();
 
   // Navigation Guard - if cart is empty and we are not in success step, redirect to collection
@@ -103,7 +105,9 @@ export default function Checkout() {
   // Calculate sum totals
   const getTotals = () => {
     const total = cart.reduce((acc, item) => {
-      const price = currency === 'INR' ? item.product.priceINR : item.product.priceUSD;
+      const price = item.product.isDynamicPricing
+        ? calculateDynamicPrice(item.selectedSize, settings.pricePerSqFt || 700, currency)
+        : (currency === 'INR' ? item.product.priceINR : item.product.priceUSD);
       return acc + (price * item.quantity);
     }, 0);
     return total;
@@ -184,7 +188,9 @@ export default function Checkout() {
       quantity: item.quantity,
       selectedSize: item.selectedSize,
       selectedColor: item.selectedColor,
-      price: currency === 'INR' ? item.product.priceINR : item.product.priceUSD
+      price: item.product.isDynamicPricing
+        ? calculateDynamicPrice(item.selectedSize, settings.pricePerSqFt || 700, currency)
+        : (currency === 'INR' ? item.product.priceINR : item.product.priceUSD)
     }));
 
     const orderDocData = {
@@ -673,7 +679,9 @@ export default function Checkout() {
                   
                   <div className="divide-y divide-sand/20 dark:divide-neutral-900 max-h-96 overflow-y-auto pr-1 py-1 mt-4 space-y-4">
                     {cart.map((item, idx) => {
-                      const itemPrice = currency === 'INR' ? item.product.priceINR : item.product.priceUSD;
+                      const itemPrice = item.product.isDynamicPricing
+                        ? calculateDynamicPrice(item.selectedSize, settings.pricePerSqFt || 700, currency)
+                        : (currency === 'INR' ? item.product.priceINR : item.product.priceUSD);
                       return (
                         <div key={idx} className="flex gap-4 pt-4 first:pt-0 items-start">
                           <img 

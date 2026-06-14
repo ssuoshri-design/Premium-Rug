@@ -18,6 +18,7 @@ export interface Product {
   rating: number;
   isFeatured: boolean;
   createdAt: string;
+  isDynamicPricing?: boolean;
 }
 
 export interface Category {
@@ -119,6 +120,7 @@ export interface WebsiteSetting {
   seoTitle: string;
   seoDescription: string;
   homepageImages?: Record<string, string>;
+  pricePerSqFt?: number;
 }
 
 export interface AdminUser {

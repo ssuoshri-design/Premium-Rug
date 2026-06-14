@@ -104,6 +104,7 @@ export default function Admin() {
   const [formFeatures, setFormFeatures] = useState('');
   const [formStockStatus, setFormStockStatus] = useState<'in_stock' | 'low_stock' | 'out_of_stock'>('in_stock');
   const [formIsFeatured, setFormIsFeatured] = useState(false);
+  const [formIsDynamicPricing, setFormIsDynamicPricing] = useState(false);
   const [formSubmitting, setFormSubmitting] = useState(false);
 
   // Showcase Portfolio Form State
@@ -138,7 +139,8 @@ export default function Admin() {
     privacyPolicy: '',
     termsConditions: '',
     seoTitle: '',
-    seoDescription: ''
+    seoDescription: '',
+    pricePerSqFt: 700
   });
   const [settingsFormLoaded, setSettingsFormLoaded] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
@@ -172,7 +174,8 @@ export default function Admin() {
       privacyPolicy: settings.privacyPolicy || '',
       termsConditions: settings.termsConditions || '',
       seoTitle: settings.seoTitle || '',
-      seoDescription: settings.seoDescription || ''
+      seoDescription: settings.seoDescription || '',
+      pricePerSqFt: settings.pricePerSqFt || 700
     });
     setSettingsFormLoaded(true);
   }
@@ -214,6 +217,7 @@ export default function Admin() {
       setFormDescription(p.description);
       setFormFeatures(p.features.join('\n'));
       setFormIsFeatured(p.isFeatured);
+      setFormIsDynamicPricing(p.isDynamicPricing || false);
     } else {
       setEditingProduct(null);
       setFormName('');
@@ -232,6 +236,7 @@ export default function Admin() {
       setFormDescription('Woven manually using custom raised pile heights against an exquisite wool canvas.');
       setFormFeatures('Individually hand-carved raised pile depths\nWoven on legacy family looms in Bhadohi\nPremium heavy cotton canvas backing linings');
       setFormIsFeatured(false);
+      setFormIsDynamicPricing(false);
     }
     setSizeDropdownOpen(false);
     setShowProductForm(true);
@@ -245,7 +250,7 @@ export default function Admin() {
       alert("Please upload at least one high-resolution product image asset.");
       return;
     }
-    if (!formSizes.trim()) {
+    if (!formIsDynamicPricing && !formSizes.trim()) {
       alert("Please select at least one dimension parameter.");
       return;
     }
@@ -259,11 +264,14 @@ export default function Admin() {
       priceINR: formPriceINR,
       priceUSD: formPriceUSD,
       images: imgs, // Real Base64 or Storage URL list (supports 3 images)
-      sizes: formSizes.split(',').map(s => s.trim()).filter(Boolean),
+      sizes: formIsDynamicPricing 
+        ? ['4x6 ft', '5x7 ft', '5x8 ft', '6x9 ft', '8x10 ft', '8x11 ft'] 
+        : formSizes.split(',').map(s => s.trim()).filter(Boolean),
       colors: formColors.split(',').map(c => c.trim()).filter(Boolean),
       stockStatus: formStockStatus,
       features: formFeatures.split('\n').map(f => f.trim()).filter(Boolean),
       isFeatured: formIsFeatured,
+      isDynamicPricing: formIsDynamicPricing,
       rating: (editingProduct as any)?.rating || 4.9,
       description: formDescription,
       shippingInfo: "Pre-treated with organic protectors. Shipped via premium air crates.",
@@ -925,74 +933,101 @@ export default function Admin() {
                         </label>
                       </div>
 
+                      <div className="space-y-1.5 flex items-center pt-5">
+                        <input 
+                          type="checkbox" 
+                          id="dynamicPricingChbox"
+                          checked={formIsDynamicPricing} 
+                          onChange={(e) => setFormIsDynamicPricing(e.target.checked)} 
+                          className="accent-amber-400 h-5 w-5 rounded border-neutral-300 dark:border-neutral-800 text-neutral-950 mr-3 cursor-pointer"
+                        />
+                        <label htmlFor="dynamicPricingChbox" className="text-[10px] font-bold uppercase tracking-wider text-[#C5A059] select-none cursor-pointer flex items-center gap-1.5">
+                          Enable Dynamic Rug Pricing 🏷️
+                        </label>
+                      </div>
+
                       <div className="space-y-1.5 md:col-span-2 relative">
                         <label className="text-[10px] uppercase font-bold tracking-wider text-neutral-450 md:col-span-2 text-neutral-400">Available Dimensions (Dropdown Selector)</label>
-                        <div className="relative">
-                          <button
-                            type="button"
-                            onClick={() => setSizeDropdownOpen(!sizeDropdownOpen)}
-                            className="w-full bg-white dark:bg-neutral-900 text-neutral-800 dark:text-stone-100 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 outline-none text-left flex justify-between items-center cursor-pointer min-h-[46px] shadow-sm hover:border-[#C5A059]/40 transition"
-                          >
-                            <div className="flex flex-wrap gap-2 overflow-hidden">
-                              {formSizes.split(',').map(s => s.trim()).filter(Boolean).length === 0 ? (
-                                <span className="text-neutral-400 dark:text-neutral-500 text-xs">Choose dimensions...</span>
-                              ) : (
-                                formSizes.split(',').map(s => s.trim()).filter(Boolean).map((s, idx) => (
-                                  <span key={idx} className="bg-[#C5A059]/10 text-[#C5A059] dark:text-amber-300 border border-[#C5A059]/30 px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold flex items-center gap-1.5">
-                                    {s}
-                                    <span 
-                                      className="hover:text-red-500 cursor-pointer font-bold text-[10px] ml-1 select-none"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleSizeSelection(s);
-                                      }}
-                                    >
-                                      ×
+                        {formIsDynamicPricing ? (
+                          <div className="bg-[#C5A059]/5 border border-[#C5A059]/25 rounded-xl px-4 py-3 text-xs text-stone-200 flex flex-col gap-1">
+                            <span className="font-semibold text-amber-300 flex items-center gap-1.5">
+                              ⚡ Dynamic Rug Calculator Enabled
+                            </span>
+                            <p className="text-[10.5px] text-neutral-400">
+                              Sizes are mathematically generated: <span className="font-mono font-bold text-[#C5A059]">4x6 ft, 5x7 ft, 5x8 ft, 6x9 ft, 8x10 ft, 8x11 ft</span>.
+                            </p>
+                            <span className="text-[9.5px] italic text-neutral-500">
+                              Base rates are updated dynamically based on your global settings rate per sq ft.
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="relative">
+                            <button
+                              type="button"
+                              onClick={() => setSizeDropdownOpen(!sizeDropdownOpen)}
+                              className="w-full bg-white dark:bg-neutral-900 text-neutral-800 dark:text-stone-100 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 outline-none text-left flex justify-between items-center cursor-pointer min-h-[46px] shadow-sm hover:border-[#C5A059]/40 transition"
+                            >
+                              <div className="flex flex-wrap gap-2 overflow-hidden">
+                                {formSizes.split(',').map(s => s.trim()).filter(Boolean).length === 0 ? (
+                                  <span className="text-neutral-400 dark:text-neutral-500 text-xs">Choose dimensions...</span>
+                                ) : (
+                                  formSizes.split(',').map(s => s.trim()).filter(Boolean).map((s, idx) => (
+                                    <span key={idx} className="bg-[#C5A059]/10 text-[#C5A059] dark:text-amber-300 border border-[#C5A059]/30 px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold flex items-center gap-1.5">
+                                      {s}
+                                      <span 
+                                        className="hover:text-red-500 cursor-pointer font-bold text-[10px] ml-1 select-none"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toggleSizeSelection(s);
+                                        }}
+                                      >
+                                        ×
+                                      </span>
                                     </span>
-                                  </span>
-                                ))
-                              )}
-                            </div>
-                            <span className="text-neutral-400 font-sans text-xs ml-2">▼</span>
-                          </button>
-
-                          {sizeDropdownOpen && (
-                            <>
-                              <div 
-                                className="fixed inset-0 z-40" 
-                                onClick={() => setSizeDropdownOpen(false)} 
-                              />
-                              <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-900 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.15)] py-2 z-50 animate-fadeIn max-h-[250px] overflow-y-auto">
-                                <div className="px-3.5 py-1.5 text-[8.5px] uppercase font-bold text-neutral-450 dark:text-neutral-500 tracking-wider border-b border-neutral-100 dark:border-neutral-900 mb-1">
-                                  Select Standard Dimensions
-                                </div>
-                                {['4x6', '5x7', '5x8', '6x9', '8x10', '8x11'].map((sz) => {
-                                  const selected = isSizeSelected(sz);
-                                  return (
-                                    <button
-                                      key={sz}
-                                      type="button"
-                                      onClick={() => toggleSizeSelection(sz)}
-                                      className="w-full text-left px-4 py-2.5 hover:bg-neutral-100 dark:hover:bg-neutral-900/40 text-xs flex items-center justify-between transition-colors cursor-pointer"
-                                    >
-                                      <span className="font-mono text-neutral-800 dark:text-stone-300 font-bold">{sz} ft</span>
-                                      <div className="flex items-center gap-2">
-                                        {selected ? (
-                                          <span className="text-[10px] text-[#C5A059] font-bold">✓ Selected</span>
-                                        ) : (
-                                          <span className="text-[10px] text-neutral-400">Add</span>
-                                        )}
-                                        <div className={`w-4 h-4 rounded border flex items-center justify-center ${selected ? 'border-[#C5A059] bg-[#C5A059] text-white font-bold text-[10px]' : 'border-neutral-300 dark:border-neutral-700'}`}>
-                                          {selected && '✓'}
-                                        </div>
-                                      </div>
-                                    </button>
-                                  );
-                                })}
+                                  ))
+                                )}
                               </div>
-                            </>
-                          )}
-                        </div>
+                              <span className="text-neutral-400 font-sans text-xs ml-2">▼</span>
+                            </button>
+
+                            {sizeDropdownOpen && (
+                              <>
+                                <div 
+                                  className="fixed inset-0 z-40" 
+                                  onClick={() => setSizeDropdownOpen(false)} 
+                                />
+                                <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-900 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.15)] py-2 z-50 animate-fadeIn max-h-[250px] overflow-y-auto">
+                                  <div className="px-3.5 py-1.5 text-[8.5px] uppercase font-bold text-neutral-450 dark:text-neutral-500 tracking-wider border-b border-neutral-100 dark:border-neutral-900 mb-1">
+                                    Select Standard Dimensions
+                                  </div>
+                                  {['4x6', '5x7', '5x8', '6x9', '8x10', '8x11'].map((sz) => {
+                                    const selected = isSizeSelected(sz);
+                                    return (
+                                      <button
+                                        key={sz}
+                                        type="button"
+                                        onClick={() => toggleSizeSelection(sz)}
+                                        className="w-full text-left px-4 py-2.5 hover:bg-neutral-100 dark:hover:bg-neutral-900/40 text-xs flex items-center justify-between transition-colors cursor-pointer"
+                                      >
+                                        <span className="font-mono text-neutral-800 dark:text-stone-300 font-bold">{sz} ft</span>
+                                        <div className="flex items-center gap-2">
+                                          {selected ? (
+                                            <span className="text-[10px] text-[#C5A059] font-bold">✓ Selected</span>
+                                          ) : (
+                                            <span className="text-[10px] text-neutral-400">Add</span>
+                                          )}
+                                          <div className={`w-4 h-4 rounded border flex items-center justify-center ${selected ? 'border-[#C5A059] bg-[#C5A059] text-white font-bold text-[10px]' : 'border-neutral-300 dark:border-neutral-700'}`}>
+                                            {selected && '✓'}
+                                          </div>
+                                        </div>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
                         <p className="text-[9px] text-neutral-400 dark:text-neutral-500 italic mt-1">Select standard dimensions suitable for client room schematics.</p>
                       </div>
 
@@ -2070,6 +2105,18 @@ export default function Admin() {
                         onChange={(e) => setSettingsForm(prev => ({ ...prev, location: e.target.value }))}
                         className="w-full bg-white dark:bg-neutral-950 text-neutral-800 dark:text-stone-150 border border-neutral-200 dark:border-neutral-850 px-4 py-3 rounded-xl outline-none focus:border-amber-400"
                         required
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase font-bold text-[#C5A059] tracking-wider">Price Per Sq Ft (₹)</label>
+                      <input 
+                        type="number"
+                        value={settingsForm.pricePerSqFt}
+                        onChange={(e) => setSettingsForm(prev => ({ ...prev, pricePerSqFt: Number(e.target.value) || 700 }))}
+                        className="w-full bg-white dark:bg-neutral-950 text-neutral-800 dark:text-[#C5A059] border border-neutral-200 dark:border-[#C5A059]/30 px-4 py-3 rounded-xl outline-none focus:border-amber-400 font-mono font-bold"
+                        required
+                        min={1}
                       />
                     </div>
 

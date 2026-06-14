@@ -13,6 +13,7 @@ import {
   Star
 } from 'lucide-react';
 import { Product } from '../types';
+import { calculateDynamicPrice } from '../utils/pricing';
 
 export default function Collection() {
   const { 
@@ -21,7 +22,8 @@ export default function Collection() {
     currency, 
     setSelectedProductId, 
     setCurrentPage,
-    addToCart
+    addToCart,
+    settings
   } = useApp();
 
   // Filters State
@@ -74,7 +76,9 @@ export default function Collection() {
       if (selectedMaterial !== 'all' && !p.material.toLowerCase().includes(selectedMaterial.toLowerCase())) return false;
 
       // Price Match
-      const price = currency === 'INR' ? p.priceINR : p.priceUSD;
+      const price = p.isDynamicPricing
+        ? calculateDynamicPrice('4x6 ft', settings.pricePerSqFt || 700, currency)
+        : (currency === 'INR' ? p.priceINR : p.priceUSD);
       const targetMaxPrice = currency === 'INR' ? priceRange : (priceRange / 80); // USD division approx
       if (price > targetMaxPrice) return false;
 
@@ -334,7 +338,9 @@ export default function Collection() {
                 </div>
               ) : (
                 filteredProducts.map((p) => {
-                  const price = currency === 'INR' ? p.priceINR : p.priceUSD;
+                  const price = p.isDynamicPricing
+                    ? calculateDynamicPrice('4x6 ft', settings.pricePerSqFt || 700, currency)
+                    : (currency === 'INR' ? p.priceINR : p.priceUSD);
                   const symbol = currency === 'INR' ? '₹' : '$';
                   return (
                     <div 

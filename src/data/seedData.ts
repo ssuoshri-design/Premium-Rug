@@ -272,6 +272,7 @@ export const FAQS = [
 
 export const GLOBAL_SETTING_DEFAULT: WebsiteSetting = {
   id: "default_config",
+  pricePerSqFt: 700,
   businessName: "Premium Rug Collection",
   founder: "Mohd Sarik",
   location: "Thane, Maharashtra, India",

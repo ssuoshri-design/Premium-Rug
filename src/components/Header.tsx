@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import Logo from './Logo';
+import { calculateDynamicPrice } from '../utils/pricing';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Menu, 
@@ -115,7 +116,8 @@ export default function Header() {
     removeFromCart, 
     detectedCountry,
     setDetectedCountry,
-    isAdminUser
+    isAdminUser,
+    settings
   } = useApp();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -169,7 +171,9 @@ export default function Header() {
   const handleCartWhatsAppInquiry = () => {
     let message = `Hello Premium Rug Collection Team,\nI am interested in reserving an exquisite estimate for the following selected luxury rugs from your collection:\n\n`;
     cart.forEach((item, idx) => {
-      const price = currency === 'INR' ? item.product.priceINR : item.product.priceUSD;
+      const price = item.product.isDynamicPricing
+        ? calculateDynamicPrice(item.selectedSize, settings.pricePerSqFt || 700, currency)
+        : (currency === 'INR' ? item.product.priceINR : item.product.priceUSD);
       const symbol = currency === 'INR' ? '₹' : '$';
       message += `${idx + 1}. ${item.product.name} (SKU: ${item.product.sku})\n   Size: ${item.selectedSize} | Color: ${item.selectedColor}\n   Qty: ${item.quantity} x ${symbol}${price}\n\n`;
     });
@@ -523,7 +527,9 @@ export default function Header() {
                 </div>
               ) : (
                 cart.map((item, index) => {
-                  const price = currency === 'INR' ? item.product.priceINR : item.product.priceUSD;
+                  const price = item.product.isDynamicPricing
+                    ? calculateDynamicPrice(item.selectedSize, settings.pricePerSqFt || 700, currency)
+                    : (currency === 'INR' ? item.product.priceINR : item.product.priceUSD);
                   const symbol = currency === 'INR' ? '₹' : '$';
                   return (
                     <div key={index} className="flex gap-4 p-4 bg-white/70 dark:bg-neutral-900/60 rounded-xl border border-sand/40 dark:border-neutral-900/55 hover:border-muted-gold/30 transition duration-300">
@@ -544,7 +550,7 @@ export default function Header() {
                           </button>
                         </div>
                         <p className="text-xs text-neutral-400 mt-1 font-sans">SKU: {item.product.sku}</p>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 font-sans">Size: {item.selectedSize} | Color: {item.selectedColor}</p>
+                        <p className="text-xs text-neutral-550 dark:text-neutral-400 mt-1 font-sans">Size: {item.selectedSize} | Color: {item.selectedColor}</p>
                         <div className="flex justify-between items-center mt-3 pt-1.5 border-t border-sand/15 dark:border-neutral-905">
                           <span className="text-xs text-neutral-400">Qty: {item.quantity}</span>
                           <span className="text-sm font-serif font-semibold text-muted-gold dark:text-champagne">{symbol} { (price * item.quantity).toLocaleString() }</span>
@@ -564,7 +570,9 @@ export default function Header() {
                   <span className="font-serif text-lg md:text-xl font-bold text-muted-gold dark:text-champagne">
                     {currency === 'INR' ? '₹' : '$'} {
                       cart.reduce((acc, item) => {
-                        const price = currency === 'INR' ? item.product.priceINR : item.product.priceUSD;
+                        const price = item.product.isDynamicPricing
+                          ? calculateDynamicPrice(item.selectedSize, settings.pricePerSqFt || 700, currency)
+                          : (currency === 'INR' ? item.product.priceINR : item.product.priceUSD);
                         return acc + (price * item.quantity);
                       }, 0).toLocaleString()
                     }

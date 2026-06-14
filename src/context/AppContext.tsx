@@ -35,6 +35,7 @@ import {
   WebsiteVisitorLog,
   ShowcaseProject
 } from '../types';
+import { calculateDynamicPrice } from '../utils/pricing';
 import { 
   INITIAL_CATEGORIES, 
   INITIAL_PRODUCTS, 
@@ -870,7 +871,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     
     const id = doc(collection(db, 'orders')).id;
     const total = cart.reduce((acc, item) => {
-      const price = currency === 'INR' ? item.product.priceINR : item.product.priceUSD;
+      const price = item.product.isDynamicPricing
+        ? calculateDynamicPrice(item.selectedSize, settings.pricePerSqFt || 700, currency)
+        : (currency === 'INR' ? item.product.priceINR : item.product.priceUSD);
       return acc + (price * item.quantity);
     }, 0);
 
@@ -887,7 +890,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         quantity: item.quantity,
         selectedSize: item.selectedSize,
         selectedColor: item.selectedColor,
-        price: currency === 'INR' ? item.product.priceINR : item.product.priceUSD
+        price: item.product.isDynamicPricing
+          ? calculateDynamicPrice(item.selectedSize, settings.pricePerSqFt || 700, currency)
+          : (currency === 'INR' ? item.product.priceINR : item.product.priceUSD)
       })),
       totalPrice: total,
       currency,
