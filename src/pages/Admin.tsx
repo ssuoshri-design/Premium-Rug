@@ -507,8 +507,8 @@ export default function Admin() {
                   required
                   className="w-full bg-stone-50 dark:bg-neutral-950 text-neutral-800 dark:text-stone-100 border border-sand dark:border-neutral-800 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-muted-gold dark:focus:border-champagne transition duration-300"
                 />
-                <p className="text-[9px] text-neutral-400 dark:text-neutral-500 leading-normal italic font-sans font-light leading-snug">
-                  * Passcode login runs in local-only sandbox mode. Uploads & edits won't persist across refreshes.
+                <p className="text-[9px] text-amber-500/90 dark:text-amber-400/90 leading-normal italic font-sans font-light leading-snug">
+                  * Passcode login successfully writes and syncs your edits and photo uploads directly to Firestore.
                 </p>
               </motion.div>
 

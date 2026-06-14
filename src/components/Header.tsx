@@ -16,7 +16,8 @@ import {
   Sparkles,
   ChevronDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  CreditCard
 } from 'lucide-react';
 
 const FlagDefs = () => (
@@ -570,14 +571,26 @@ export default function Header() {
                   </span>
                 </div>
                 
-                <p className="text-xs text-neutral-400 leading-relaxed font-sans font-light">
-                  Founder Mohd Sarik coordinates all custom orders with you on WhatsApp. No immediate payment is required. This acts as a reservation request for custom sizes.
+                <p className="text-xs text-neutral-450 leading-relaxed font-sans font-light">
+                  Complete your order instantly using our secure payment gateway or send a custom reservation request to Mohd Sarik on WhatsApp.
                 </p>
+
+                {/* Instant Secure Ledger Checkout */}
+                <button
+                  onClick={() => {
+                    setCartOpen(false);
+                    setCurrentPage('checkout');
+                  }}
+                  className="w-full bg-gradient-to-r from-amber-500 via-amber-300 to-yellow-600 hover:from-amber-600 hover:to-yellow-500 text-neutral-950 text-center font-sans text-xs md:text-sm font-black tracking-wider py-4 rounded-full shadow-[0_4px_18px_rgba(212,175,55,0.2)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.4)] flex items-center justify-center gap-2 transition duration-300 cursor-pointer active:scale-98"
+                >
+                  <CreditCard className="h-4.5 w-4.5" />
+                  <span>Proceed to Secure Checkout</span>
+                </button>
 
                 {/* WhatsApp Reservation */}
                 <button
                   onClick={handleCartWhatsAppInquiry}
-                  className="w-full bg-neutral-900 hover:bg-black dark:bg-muted-gold dark:hover:bg-champagne text-white text-center font-sans text-xs md:text-sm font-semibold tracking-wider py-4 rounded-full shadow-md flex items-center justify-center gap-2 transition duration-300 active:scale-98"
+                  className="w-full bg-neutral-900 hover:bg-black text-white text-center font-sans text-xs md:text-sm font-semibold tracking-wider py-4 rounded-full shadow-md flex items-center justify-center gap-2 transition duration-300 active:scale-98 cursor-pointer"
                 >
                   <MessageCircle className="h-4.5 w-4.5" />
                   <span>Send WhatsApp Order Request</span>
@@ -589,7 +602,7 @@ export default function Header() {
                     setCartOpen(false);
                     setCurrentPage('custom-rug');
                   }}
-                  className="w-full text-center border border-muted-gold/50 text-muted-gold hover:bg-sand/30 font-sans text-xs md:text-sm font-semibold tracking-wider py-4 rounded-full transition duration-300"
+                  className="w-full text-center border border-muted-gold/50 text-muted-gold hover:bg-sand/30 font-sans text-xs md:text-sm font-semibold tracking-wider py-4 rounded-full transition duration-300 cursor-pointer"
                 >
                   Submit Quote Request Form
                 </button>

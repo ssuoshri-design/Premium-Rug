@@ -17,6 +17,7 @@ import Contact from './pages/Contact';
 import Policy from './pages/Policy';
 import Sitemap from './pages/Sitemap';
 import Admin from './pages/Admin';
+import Checkout from './pages/Checkout';
 
 export default function App() {
   const { currentPage, theme } = useApp();
@@ -53,6 +54,8 @@ export default function App() {
         return <Contact />;
       case 'sitemap':
         return <Sitemap />;
+      case 'checkout':
+        return <Checkout />;
       case 'admin':
         return <Admin />;
       default:

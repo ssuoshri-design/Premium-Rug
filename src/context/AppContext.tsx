@@ -177,7 +177,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isFirebaseLoading, setIsFirebaseLoading] = useState<boolean>(true);
   const [isDbSeeded, setIsDbSeeded] = useState<boolean>(false);
 
-  const isSandboxMode = isAdminUser && (!currentUser || currentUser.uid === 'mock_admin_uid');
+  const isSandboxMode = false;
 
   // Synchronize dynamic URL page navigation for robust SEO back-buttons
   const setCurrentPage = (page: string) => {

@@ -16,7 +16,8 @@ import {
   Compass,
   MapPin,
   HelpCircle,
-  Truck
+  Truck,
+  CreditCard
 } from 'lucide-react';
 
 export default function Details() {
@@ -404,6 +405,18 @@ export default function Details() {
                   <span>Reserve on WhatsApp</span>
                 </button>
               </div>
+
+              {/* Instant Secure Buy Now Action */}
+              <button 
+                onClick={() => {
+                  addToCart(product, quantity, selectedSize, selectedColor);
+                  setCurrentPage('checkout');
+                }}
+                className="w-full bg-gradient-to-r from-amber-500 via-amber-300 to-yellow-600 hover:from-amber-600 hover:to-yellow-500 text-neutral-950 text-[10px] font-sans font-black tracking-[0.25em] uppercase py-4 rounded-full shadow-[0_4px_18px_rgba(212,175,55,0.2)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.4)] transition-all duration-500 flex items-center justify-center gap-2 cursor-pointer active:scale-98 relative overflow-hidden group"
+              >
+                <CreditCard className="h-4.5 w-4.5 shrink-0" />
+                <span>Instant Gold Checkout (Buy Now)</span>
+              </button>
 
               {addedMessage && (
                 <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 p-4 rounded-xl flex items-center gap-3 text-xs font-sans font-semibold animate-fadeIn">

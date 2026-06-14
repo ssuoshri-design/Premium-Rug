@@ -35,5 +35,21 @@
   .animate-slideLeft {
     animation: slideLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-invisible {
+    backface-visibility: hidden;
+  }
 }
 
