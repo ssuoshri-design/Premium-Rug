@@ -104,6 +104,7 @@ interface AppContextType {
   updateOrderStatus: (id: string, status: Order['orderStatus'], trackingNumber?: string) => Promise<void>;
   updateReviewStatus: (id: string, status: CustomerReview['status']) => Promise<void>;
   updateGlobalSettings: (s: Partial<WebsiteSetting>) => Promise<void>;
+  updateCategory: (id: string, cat: Partial<Category>) => Promise<void>;
   
   // Custom Admin Page Compatibility Helpers
   loginAdminUser: (email: string, pass: string) => Promise<boolean>;
@@ -1059,6 +1060,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateCategory = async (id: string, cat: Partial<Category>) => {
+    if (isSandboxMode) {
+      setCategories(prev => prev.map(c => c.id === id ? { ...c, ...cat } : c));
+      return;
+    }
+    try {
+      await setDoc(doc(db, 'categories', id), cat, { merge: true });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `categories/${id}`);
+    }
+  };
+
   const addShowcaseProject = async (p: Omit<ShowcaseProject, 'id' | 'createdAt'>) => {
     const id = doc(collection(db, 'showcase_projects')).id;
     const complete: ShowcaseProject = {
@@ -1207,6 +1220,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updateOrderStatus,
       updateReviewStatus,
       updateGlobalSettings,
+      updateCategory,
       showcaseProjects,
       addShowcaseProject,
       editShowcaseProject,

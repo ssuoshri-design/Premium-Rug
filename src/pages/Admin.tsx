@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import ImageUpload from '../components/ImageUpload';
 import Logo from '../components/Logo';
 import { motion } from 'motion/react';
+import { compressImage } from '../components/imageCompressor';
 import { 
   BarChart3, 
   Layers, 
@@ -61,6 +62,7 @@ export default function Admin() {
     updateOrderStatus,
     settings,
     updateGlobalSettings,
+    updateCategory,
     showcaseProjects,
     addShowcaseProject,
     editShowcaseProject,
@@ -137,6 +139,15 @@ export default function Admin() {
   const [settingsFormLoaded, setSettingsFormLoaded] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsStatusMsg, setSettingsStatusMsg] = useState('');
+
+  // Settings tab sub-navigation & Category CMS state
+  const [settingsSubTab, setSettingsSubTab] = useState<'profile' | 'images' | 'categories'>('profile');
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [tempCategoryName, setTempCategoryName] = useState('');
+  const [tempCategoryDesc, setTempCategoryDesc] = useState('');
+  const [tempCategoryImage, setTempCategoryImage] = useState('');
+  const [categorySavingId, setCategorySavingId] = useState<string | null>(null);
+  const [uploadingImageKey, setUploadingImageKey] = useState<string | null>(null);
 
   // Dynamically populate settings form once settings are resolved
   if (settings && !settingsFormLoaded) {
@@ -1855,9 +1866,36 @@ export default function Admin() {
             {/* 9. GLOBAL BRAND SETTINGS & ENTERPRISE POLICIES TAB */}
             {activeTab === 'settings' && (
               <div className="space-y-6 animate-fadeIn">
-                <div className="text-left border-b border-neutral-200 dark:border-neutral-850 pb-4">
-                  <h2 className="text-xl font-serif font-light tracking-tight text-neutral-900 dark:text-stone-100">Global Website Configuration</h2>
-                  <p className="text-xs text-neutral-400 font-sans mt-0.5">Control contact lines and legal policies dynamically across the visual front portal.</p>
+                <div className="text-left border-b border-neutral-200 dark:border-neutral-850 pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-serif font-light tracking-tight text-neutral-900 dark:text-stone-100">Global Website Configuration</h2>
+                    <p className="text-xs text-neutral-400 font-sans mt-0.5">Control contact lines, legal policies, page cover photos, and category details.</p>
+                  </div>
+
+                  {/* Settings tabs switches */}
+                  <div className="flex gap-1.5 p-1 bg-neutral-100 dark:bg-neutral-950 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setSettingsSubTab('profile')}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition cursor-pointer ${settingsSubTab === 'profile' ? 'bg-amber-400 font-bold text-neutral-950 shadow-md' : 'text-neutral-500 hover:text-zinc-350 bg-transparent'}`}
+                    >
+                      General Info
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSettingsSubTab('images')}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition cursor-pointer ${settingsSubTab === 'images' ? 'bg-amber-400 font-bold text-neutral-950 shadow-md' : 'text-neutral-500 hover:text-zinc-350 bg-transparent'}`}
+                    >
+                      Portal Photos
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSettingsSubTab('categories')}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition cursor-pointer ${settingsSubTab === 'categories' ? 'bg-amber-400 font-bold text-neutral-950 shadow-md' : 'text-neutral-500 hover:text-zinc-350 bg-transparent'}`}
+                    >
+                      Categories CMS
+                    </button>
+                  </div>
                 </div>
 
                 {settingsStatusMsg && (
@@ -1866,7 +1904,8 @@ export default function Admin() {
                   </div>
                 )}
 
-                <form onSubmit={handleSettingsSubmit} className="space-y-6 text-left font-sans text-xs text-neutral-800 dark:text-neutral-300">
+                {settingsSubTab === 'profile' && (
+                  <form onSubmit={handleSettingsSubmit} className="space-y-6 text-left font-sans text-xs text-neutral-800 dark:text-neutral-300">
                   
                   {/* BRAND DETAILS GRID */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2035,6 +2074,303 @@ export default function Admin() {
                   </button>
 
                 </form>
+              )}
+
+              {/* 2. PORTAL IMAGES CMS */}
+              {settingsSubTab === 'images' && (() => {
+                const PORTAL_IMAGE_SPECS = [
+                  { key: 'heroBg', title: 'Main Landing Hero Banner', description: 'The grand background photo of the top header area on the homepage.' },
+                  { key: 'bento1', title: 'Featured Collection: Modern Rugs', description: 'The large card cover image for the Modern Rugs category on the homepage.' },
+                  { key: 'bento2', title: 'Featured Collection: Abstract Rugs', description: 'The portrait card cover image for Abstract Rugs on the homepage.' },
+                  { key: 'bento3', title: 'Featured Collection: Hand-Tufted Rugs', description: 'The landscape card cover image for Hand-Tufted Rugs on the homepage.' },
+                  { key: 'bento4', title: 'Featured Collection: Round Rugs', description: 'The central card image for Round Rugs on the homepage.' },
+                  { key: 'heritage1', title: 'Heritage Story main portrait', description: 'The vertical image showing Bhadohi weavers in the heritage section.' },
+                  { key: 'heritage2', title: 'Heritage Story secondary detail', description: 'The small floating secondary detail image showing premium yarn threads.' },
+                  { key: 'aboutLoom', title: 'Our Story Page: Ancestral Loom', description: 'The main weaving loom illustration/photo displayed in the story timeline page.' },
+                  { key: 'aboutFounder', title: 'Our Story Page: Founder Portrait', description: 'Portrait photo of Mohd Sarik displayed next to the founders promise.' },
+                  { key: 'consultation', title: 'Consultation Form cover image', description: 'The atmospheric picture shown in the designer request forms section.' },
+                  { key: 'gallery1', title: 'Patron Gallery Spot 1', description: 'First spot image displayed inside the interactive showcase gallery grid.' },
+                  { key: 'gallery2', title: 'Patron Gallery Spot 2', description: 'Second spot image displayed inside the interactive showcase gallery grid.' },
+                  { key: 'gallery3', title: 'Patron Gallery Spot 3', description: 'Third spot image displayed inside the interactive showcase gallery grid.' },
+                  { key: 'gallery4', title: 'Patron Gallery Spot 4', description: 'Fourth spot image displayed inside the interactive showcase gallery grid.' },
+                  { key: 'gallery5', title: 'Patron Gallery Spot 5', description: 'Fifth spot image displayed inside the interactive showcase gallery grid.' },
+                  { key: 'gallery6', title: 'Patron Gallery Spot 6', description: 'Sixth spot image displayed inside the interactive showcase gallery grid.' },
+                ];
+
+                const GLOBAL_SETTING_DEFAULT = {
+                  homepageImages: {
+                    heroBg: "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&q=80&w=2000",
+                    bento1: "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&q=80&w=1200",
+                    bento2: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=800",
+                    bento3: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=800",
+                    bento4: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800",
+                    heritage1: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=1200",
+                    heritage2: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=700",
+                    gallery1: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=crop&q=80&w=700",
+                    gallery2: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=crop&q=80&w=700",
+                    gallery3: "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?auto=crop&q=80&w=700",
+                    gallery4: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=crop&q=80&w=700",
+                    gallery5: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=crop&q=80&w=700",
+                    gallery6: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=crop&q=80&w=700",
+                    consultation: "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&q=80&w=900"
+                  }
+                };
+
+                return (
+                  <div className="bg-neutral-50 dark:bg-zinc-950 p-6 rounded-2xl border border-neutral-200 dark:border-neutral-900 text-left">
+                    <h3 className="text-sm font-bold tracking-wide text-neutral-900 dark:text-warm-ivory uppercase mb-2">Web Portal Visual Assets CMS</h3>
+                    <p className="text-[11px] text-neutral-500 mb-6 leading-relaxed">
+                      Upload or paste picture URLs for any section on the website. This lets you revise landing banners, decorative frames, and backgrounds in real-time.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {PORTAL_IMAGE_SPECS.map((spec) => {
+                        const currentUrl = settings?.homepageImages?.[spec.key] || GLOBAL_SETTING_DEFAULT.homepageImages[spec.key as keyof typeof GLOBAL_SETTING_DEFAULT.homepageImages] || '';
+                        const isUploading = uploadingImageKey === spec.key;
+                        return (
+                          <div key={spec.key} className="p-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-850 shadow-sm flex flex-col justify-between" id={`portal-spec-${spec.key}`}>
+                            <div className="space-y-3">
+                              <h4 className="font-serif text-xs font-bold text-neutral-800 dark:text-stone-100 uppercase tracking-wider">{spec.title}</h4>
+                              <p className="text-[10px] text-neutral-400 leading-normal">{spec.description}</p>
+                              
+                              <div className="h-32 w-full rounded-lg overflow-hidden bg-neutral-950 border border-neutral-200 dark:border-neutral-850 relative">
+                                {currentUrl ? (
+                                  <img src={currentUrl} alt={spec.title} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                                ) : (
+                                  <div className="h-full w-full flex items-center justify-center text-neutral-500 text-[10px] font-mono">No Image Defined</div>
+                                )}
+                                
+                                <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-250 flex items-center justify-center">
+                                  <label className="cursor-pointer bg-amber-400 hover:bg-amber-300 text-neutral-950 text-[10px] font-bold tracking-wider uppercase px-3 py-1.5 rounded-full transition duration-150 shadow-lg">
+                                    {isUploading ? "Processing..." : "Upload File"}
+                                    <input 
+                                      type="file" 
+                                      accept="image/*" 
+                                      className="hidden" 
+                                      disabled={isUploading}
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          setUploadingImageKey(spec.key);
+                                          try {
+                                            const compressed = await compressImage(file, 1000, 0.75);
+                                            const currentImages = settings?.homepageImages || {};
+                                            const updatedImages = {
+                                              ...currentImages,
+                                              [spec.key]: compressed
+                                            };
+                                            await updateGlobalSettings({
+                                              homepageImages: updatedImages
+                                            });
+                                            alert(`Successfully uploaded custom file for ${spec.title}!`);
+                                          } catch (err: any) {
+                                            alert("Compression error: " + err.message);
+                                          } finally {
+                                            setUploadingImageKey(null);
+                                          }
+                                        }
+                                      }} 
+                                    />
+                                  </label>
+                                </div>
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-wider">Static Address / URL</label>
+                                <div className="flex gap-2">
+                                  <input 
+                                    type="text" 
+                                    defaultValue={currentUrl}
+                                    placeholder="https://images.unsplash.com/... or base64 stream"
+                                    className="flex-1 bg-zinc-50 dark:bg-zinc-950 border border-neutral-200 dark:border-neutral-800 rounded px-2.5 py-1.5 outline-none text-[9px] font-mono focus:border-amber-500 text-neutral-900 dark:text-stone-100"
+                                    id={`portal-img-input-${spec.key}`}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      const inputEl = document.getElementById(`portal-img-input-${spec.key}`) as HTMLInputElement;
+                                      if (inputEl) {
+                                        const val = inputEl.value;
+                                        if (!val.trim()) {
+                                          alert("Please enter a valid URL first.");
+                                          return;
+                                        }
+                                        try {
+                                          const currentImages = settings?.homepageImages || {};
+                                          const updatedImages = {
+                                            ...currentImages,
+                                            [spec.key]: val.trim()
+                                          };
+                                          await updateGlobalSettings({
+                                            homepageImages: updatedImages
+                                          });
+                                          alert(`Saved new URL for ${spec.title}!`);
+                                        } catch (err: any) {
+                                          alert("Save error: " + err.message);
+                                        }
+                                      }
+                                    }}
+                                    className="px-2.5 py-1.5 bg-neutral-900 dark:bg-black border border-neutral-800 hover:bg-neutral-850 text-champagne rounded text-[10px] font-bold duration-150 cursor-pointer"
+                                  >
+                                    Save
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 3. CATEGORIES CMS */}
+              {settingsSubTab === 'categories' && (
+                <div className="bg-neutral-50 dark:bg-zinc-950 p-6 rounded-2xl border border-neutral-200 dark:border-neutral-900 text-left">
+                  <h3 className="text-sm font-bold tracking-wide text-neutral-900 dark:text-warm-ivory uppercase mb-2">Category & Handcraft Directory Curation</h3>
+                  <p className="text-[11px] text-neutral-500 mb-6 leading-relaxed">
+                    Update titles, descriptions, and primary feature covers for the distinct rug weaving styles offered across the gallery catalog.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {categories.map((cat) => {
+                      const isEditing = editingCategoryId === cat.id;
+                      return (
+                        <div key={cat.id} className="p-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-150 dark:border-neutral-800 shadow-sm flex flex-col justify-between" id={`cat-card-${cat.id}`}>
+                          <div className="space-y-3">
+                            <div className="h-44 w-full rounded-lg overflow-hidden bg-zinc-900 relative">
+                              <img src={isEditing ? tempCategoryImage : cat.image} alt={cat.name} className="h-full w-full object-cover" />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-200 flex items-center justify-center p-4">
+                                <label className="cursor-pointer bg-white text-zinc-900 px-3 py-1.5 rounded-full font-bold text-[10px] tracking-wide uppercase hover:scale-105 active:scale-95 transition-all duration-150 shadow-lg" id={`choose-file-label-${cat.id}`}>
+                                  <span>Choose Local File</span>
+                                  <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    className="hidden" 
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        try {
+                                          const base64 = await compressImage(file, 1000, 0.75);
+                                          if (isEditing) {
+                                            setTempCategoryImage(base64);
+                                          } else {
+                                            await updateCategory(cat.id, { image: base64 });
+                                            alert("Category image updated successfully!");
+                                          }
+                                        } catch (err: any) {
+                                          alert("Failed to compress and upload image: " + err.message);
+                                        }
+                                      }
+                                    }} 
+                                  />
+                                </label>
+                              </div>
+                            </div>
+
+                            {isEditing ? (
+                              <div className="space-y-3 text-left">
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Category Name</label>
+                                  <input 
+                                    type="text"
+                                    value={tempCategoryName}
+                                    onChange={(e) => setTempCategoryName(e.target.value)}
+                                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-neutral-205 dark:border-neutral-800 rounded-lg px-3 py-2 outline-none text-xs text-neutral-950 dark:text-stone-100"
+                                    id={`cat-name-input-${cat.id}`}
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Cover Image URL</label>
+                                  <input 
+                                    type="text"
+                                    value={tempCategoryImage}
+                                    onChange={(e) => setTempCategoryImage(e.target.value)}
+                                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-neutral-205 dark:border-neutral-800 rounded-lg px-3 py-2 outline-none text-[10px] font-mono text-neutral-950 dark:text-stone-100"
+                                    id={`cat-img-input-${cat.id}`}
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Description</label>
+                                  <textarea 
+                                    value={tempCategoryDesc}
+                                    onChange={(e) => setTempCategoryDesc(e.target.value)}
+                                    rows={3}
+                                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-neutral-205 dark:border-neutral-800 rounded-lg px-3 py-2 outline-none text-xs text-neutral-950 dark:text-stone-100"
+                                    id={`cat-desc-input-${cat.id}`}
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-1 text-left">
+                                <span className="text-[10px] uppercase font-mono font-bold text-amber-500 tracking-wider">ID: {cat.id}</span>
+                                <h4 className="font-serif text-base font-medium text-neutral-900 dark:text-white uppercase tracking-wider">{cat.name}</h4>
+                                <p className="text-[11px] text-neutral-400 leading-normal">{cat.description}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="mt-4 pt-4 border-t border-neutral-150 dark:border-neutral-850 flex gap-2 justify-end">
+                            {isEditing ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingCategoryId(null)}
+                                  className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-800 text-neutral-400 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors cursor-pointer text-[10px] font-bold uppercase tracking-wider"
+                                  id={`cancel-cat-btn-${cat.id}`}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={categorySavingId === cat.id}
+                                  onClick={async () => {
+                                    setCategorySavingId(cat.id);
+                                    try {
+                                      await updateCategory(cat.id, {
+                                        name: tempCategoryName,
+                                        description: tempCategoryDesc,
+                                        image: tempCategoryImage
+                                      });
+                                      setEditingCategoryId(null);
+                                      alert("Category details updated successfully!");
+                                    } catch (err: any) {
+                                      alert("Failed to save category: " + err.message);
+                                    } finally {
+                                      setCategorySavingId(null);
+                                    }
+                                  }}
+                                  className="px-3 py-1.5 bg-gradient-to-r from-amber-400 to-yellow-600 text-neutral-950 font-bold rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
+                                  id={`save-cat-btn-${cat.id}`}
+                                >
+                                  {categorySavingId === cat.id ? "Saving..." : "Save Changes"}
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingCategoryId(cat.id);
+                                  setTempCategoryName(cat.name);
+                                  setTempCategoryDesc(cat.description);
+                                  setTempCategoryImage(cat.image);
+                                }}
+                                className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-300 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
+                                id={`edit-cat-btn-${cat.id}`}
+                              >
+                                <Edit className="h-3 w-3" />
+                                <span>Edit Details</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               </div>
             )}
 

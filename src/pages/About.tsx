@@ -1,7 +1,13 @@
 import React from 'react';
 import { ShieldCheck, Compass, Anchor, Settings, Globe2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 export default function About() {
+  const { settings } = useApp();
+  
+  const loomImage = settings?.homepageImages?.aboutLoom || "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=800";
+  const founderImage = settings?.homepageImages?.aboutFounder || "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=600";
+
   const steps = [
     {
       no: "01",
@@ -64,7 +70,7 @@ export default function About() {
           </div>
           <div className="group overflow-hidden rounded-2xl shadow-xl border border-sand dark:border-neutral-900 bg-neutral-950">
             <img 
-              src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=800" 
+              src={loomImage} 
               alt="Ancestral Bhadohi Loom" 
               className="w-full object-cover aspect-video transition-transform duration-700 group-hover:scale-[1.03]"
             />
@@ -97,7 +103,7 @@ export default function About() {
           <div className="lg:col-span-4 justify-center flex">
             <div className="relative p-1 border border-sand dark:border-neutral-800 rounded-full">
               <img 
-                src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&q=80&w=600" 
+                src={founderImage} 
                 alt="Founder Mohd Sarik Portrait" 
                 className="h-60 w-60 rounded-full object-cover border-2 border-muted-gold shadow-md"
               />

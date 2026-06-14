@@ -20,6 +20,13 @@ import {
   CreditCard
 } from 'lucide-react';
 
+const STANDARD_SIZES = [
+  { label: '4 x 6 ft', metric: '120 x 180 cm', room: 'Accent / Study' },
+  { label: '5 x 8 ft', metric: '150 x 240 cm', room: 'Lobby / Bedroom' },
+  { label: '6 x 9 ft', metric: '180 x 270 cm', room: 'Living Room' },
+  { label: '8 x 11 ft', metric: '240 x 330 cm', room: 'Grand Dinings' }
+];
+
 export default function Details() {
   const { 
     selectedProductId, 
@@ -57,7 +64,7 @@ export default function Details() {
   useEffect(() => {
     if (product) {
       setActiveImage(product.images[0]);
-      setSelectedSize(product.sizes[0]);
+      setSelectedSize(''); // Force user selection - do not pre-select a size
       setSelectedColor(product.colors[0] || 'Default');
     }
   }, [product]);
@@ -353,24 +360,42 @@ export default function Details() {
             </p>
 
             {/* Dimensions selector */}
-            <div className="space-y-3">
-              <span className="text-[10px] font-sans font-bold tracking-widest uppercase text-taupe dark:text-neutral-400 block font-semibold">Select Dimensions</span>
-              <div className="flex flex-wrap gap-2 pt-1 font-sans">
-                {product.sizes.map((sz, idx) => (
+            <div className="space-y-4">
+              <div className="flex justify-between items-end border-b border-sand/35 dark:border-neutral-900 pb-2.5">
+                <span className="text-[10px] font-sans font-black tracking-widest uppercase text-taupe dark:text-neutral-400 block font-semibold">Select Dimensions (Mandatory)</span>
+                {selectedSize ? (
+                  <span className="text-[10px] font-sans text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">✓ Selected: {selectedSize}</span>
+                ) : (
+                  <span className="text-[10px] font-sans text-amber-500 dark:text-amber-400 font-bold flex items-center gap-1 animate-pulse">⚠️ Size Required</span>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3.5 pt-1.5 font-sans">
+                {STANDARD_SIZES.map((sz, idx) => (
                   <button 
                     key={idx}
-                    onClick={() => setSelectedSize(sz)}
-                    className={`p-3.5 border text-[11px] font-sans tracking-widest font-bold uppercase rounded-lg transition-all cursor-pointer ${
-                      selectedSize === sz 
-                        ? 'border-neutral-950 bg-neutral-950 text-white dark:border-champagne dark:bg-champagne dark:text-neutral-950 shadow-md' 
-                        : 'border-sand/60 dark:border-neutral-850 hover:border-muted-gold/30'
+                    type="button"
+                    onClick={() => setSelectedSize(sz.label)}
+                    className={`flex flex-col items-start p-4 border rounded-xl relative transition-all duration-300 cursor-pointer text-left ${
+                      selectedSize === sz.label 
+                        ? 'border-[#C5A059] bg-[#C5A059]/5 dark:bg-[#C5A059]/10 text-neutral-900 dark:text-amber-100 shadow-[0_4px_16px_rgba(212,175,55,0.08)] scale-[1.02]' 
+                        : 'border-sand/60 dark:border-neutral-850 hover:border-amber-500/50 bg-white/10 dark:bg-neutral-900/10 text-neutral-800 dark:text-stone-300'
                     }`}
                   >
-                    {sz}
+                    <div className="flex justify-between items-center w-full">
+                      <span className="font-serif font-black tracking-wide text-xs uppercase pr-1">□ {sz.label}</span>
+                      {selectedSize === sz.label ? (
+                        <span className="w-4 h-4 rounded-full bg-[#C5A059] text-white flex items-center justify-center text-[9px] font-bold">✓</span>
+                      ) : (
+                        <span className="w-4 h-4 rounded-full border border-neutral-300 dark:border-neutral-700" />
+                      )}
+                    </div>
+                    <span className="text-[9px] font-mono text-neutral-450 dark:text-neutral-500 mt-2 block font-medium">Metric: {sz.metric}</span>
+                    <span className="text-[8px] font-sans font-bold uppercase tracking-wider text-muted-gold dark:text-champagne/80 mt-0.5 block">{sz.room}</span>
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] text-neutral-400 font-sans italic">Custom parameters are weaver-knotted to client room schematics.</p>
+              <p className="text-[10px] text-neutral-450 font-sans italic">Custom dimensions and bespoke templates can be requested with the weavers.</p>
             </div>
 
             {/* Masterwork details list */}
@@ -388,10 +413,22 @@ export default function Details() {
 
             {/* Direct Booking Drawer Actions */}
             <div className="space-y-4 pt-1">
+              {!selectedSize && (
+                <div className="bg-amber-500/10 border border-amber-500/20 text-xs text-amber-600 dark:text-amber-400 p-3 rounded-xl flex items-center gap-2 font-sans font-semibold">
+                  <span className="inline-block h-2 w-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                  <span>Choose size above to reserve this masterwork or proceed to checkout.</span>
+                </div>
+              )}
+              
               <div className="flex flex-col sm:flex-row gap-4">
                 <button 
                   onClick={handleAddToCartAction}
-                  className="flex-1 bg-white hover:bg-neutral-950 text-neutral-950 hover:text-white dark:bg-zinc-900 dark:hover:bg-champagne dark:hover:text-neutral-950 border border-sand dark:border-neutral-850 text-[10px] font-sans font-bold tracking-[0.25em] uppercase py-4 rounded-full shadow transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+                  disabled={!selectedSize}
+                  className={`flex-1 text-[10px] font-sans font-bold tracking-[0.25em] uppercase py-4 rounded-full shadow transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 cursor-pointer ${
+                    selectedSize 
+                      ? 'bg-white hover:bg-neutral-950 text-neutral-950 hover:text-white dark:bg-zinc-900 dark:hover:bg-champagne dark:hover:text-neutral-950 border border-sand dark:border-neutral-850' 
+                      : 'bg-neutral-200 text-neutral-400 dark:bg-neutral-900/40 dark:text-neutral-600 border border-neutral-300/40 dark:border-neutral-800/40 cursor-not-allowed opacity-60'
+                  }`}
                 >
                   <ShoppingBag className="h-4.5 w-4.5" />
                   <span>Reserve in Portfolio</span>
@@ -412,7 +449,12 @@ export default function Details() {
                   addToCart(product, quantity, selectedSize, selectedColor);
                   setCurrentPage('checkout');
                 }}
-                className="w-full bg-gradient-to-r from-amber-500 via-amber-300 to-yellow-600 hover:from-amber-600 hover:to-yellow-500 text-neutral-950 text-[10px] font-sans font-black tracking-[0.25em] uppercase py-4 rounded-full shadow-[0_4px_18px_rgba(212,175,55,0.2)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.4)] transition-all duration-500 flex items-center justify-center gap-2 cursor-pointer active:scale-98 relative overflow-hidden group"
+                disabled={!selectedSize}
+                className={`w-full text-[10px] font-sans font-black tracking-[0.25em] uppercase py-4 rounded-full shadow-[0_4px_18px_rgba(212,175,55,0.2)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.4)] transition-all duration-500 flex items-center justify-center gap-2 cursor-pointer active:scale-98 relative overflow-hidden group ${
+                  selectedSize 
+                    ? 'bg-gradient-to-r from-amber-500 via-amber-300 to-yellow-600 hover:from-amber-600 hover:to-yellow-500 text-neutral-950' 
+                    : 'bg-neutral-300 text-neutral-500 dark:bg-zinc-900/50 dark:text-neutral-600 border border-neutral-300/30 dark:border-neutral-800/20 cursor-not-allowed opacity-50 shadow-none'
+                }`}
               >
                 <CreditCard className="h-4.5 w-4.5 shrink-0" />
                 <span>Instant Gold Checkout (Buy Now)</span>
