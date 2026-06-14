@@ -937,7 +937,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      await updateDoc(doc(db, 'products', id), p);
+      const existingProduct = products.find(item => item.id === id);
+      if (existingProduct) {
+        const merged: Product = {
+          ...existingProduct,
+          ...p,
+          id
+        };
+        await setDoc(doc(db, 'products', id), merged);
+      } else {
+        await updateDoc(doc(db, 'products', id), p);
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `products/${id}`);
     }
@@ -1042,7 +1052,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      await updateDoc(doc(db, 'website_settings', 'default_config'), s);
+      await setDoc(doc(db, 'website_settings', 'default_config'), s, { merge: true });
       setSettings(prev => ({ ...prev, ...s }));
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, 'website_settings/default_config');
@@ -1073,7 +1083,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      await updateDoc(doc(db, 'showcase_projects', id), p);
+      const existingProj = showcaseProjects.find(item => item.id === id);
+      if (existingProj) {
+        const merged: ShowcaseProject = {
+          ...existingProj,
+          ...p,
+          id
+        };
+        await setDoc(doc(db, 'showcase_projects', id), merged);
+      } else {
+        await updateDoc(doc(db, 'showcase_projects', id), p);
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `showcase_projects/${id}`);
     }
