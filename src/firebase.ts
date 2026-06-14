@@ -1,16 +1,21 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import firebaseConfig from '../firebase-applet-config.json';
 
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with custom DB selection from our applet configuration
-export const db = (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)' && firebaseConfig.firestoreDatabaseId !== '')
-  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
-  : getFirestore(app);
+// Extract the custom Firestore database ID if provided
+const dbId = (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)' && firebaseConfig.firestoreDatabaseId !== '')
+  ? firebaseConfig.firestoreDatabaseId
+  : undefined;
+
+// Initialize Firestore with custom DB selection and long polling enabled to bypass network/gRPC bottlenecks in sandbox
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+}, dbId);
 
 // Initialize Authentication
 export const auth = getAuth(app);

@@ -94,6 +94,10 @@ export default function Admin() {
   const [formPriceINR, setFormPriceINR] = useState(0);
   const [formPriceUSD, setFormPriceUSD] = useState(0);
   const [formImgUrl, setFormImgUrl] = useState('');
+  const [formImgUrl1, setFormImgUrl1] = useState('');
+  const [formImgUrl2, setFormImgUrl2] = useState('');
+  const [formImgUrl3, setFormImgUrl3] = useState('');
+  const [sizeDropdownOpen, setSizeDropdownOpen] = useState(false);
   const [formSizes, setFormSizes] = useState('');
   const [formColors, setFormColors] = useState('');
   const [formDescription, setFormDescription] = useState('');
@@ -201,6 +205,9 @@ export default function Admin() {
       setFormPriceINR(p.priceINR);
       setFormPriceUSD(p.priceUSD);
       setFormImgUrl(p.images[0] || '');
+      setFormImgUrl1(p.images[0] || '');
+      setFormImgUrl2(p.images[1] || '');
+      setFormImgUrl3(p.images[2] || '');
       setFormSizes(p.sizes.join(', '));
       setFormColors(p.colors.join(', '));
       setFormStockStatus(p.stockStatus || 'in_stock');
@@ -216,21 +223,30 @@ export default function Admin() {
       setFormPriceINR(145000);
       setFormPriceUSD(1850);
       setFormImgUrl('');
-      setFormSizes('6x9 ft (180x270 cm), 8x10 ft (240x300 cm), 9x12 ft (270x360 cm)');
+      setFormImgUrl1('');
+      setFormImgUrl2('');
+      setFormImgUrl3('');
+      setFormSizes('6x9, 8x11');
       setFormColors('Gold, Ivory, Beige, Bronze');
       setFormStockStatus('in_stock');
       setFormDescription('Woven manually using custom raised pile heights against an exquisite wool canvas.');
       setFormFeatures('Individually hand-carved raised pile depths\nWoven on legacy family looms in Bhadohi\nPremium heavy cotton canvas backing linings');
       setFormIsFeatured(false);
     }
+    setSizeDropdownOpen(false);
     setShowProductForm(true);
   };
 
   // Handle saving product
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formImgUrl) {
-      alert("Please upload a high-resolution product image asset.");
+    const imgs = [formImgUrl1 || formImgUrl, formImgUrl2, formImgUrl3].filter(Boolean);
+    if (imgs.length === 0) {
+      alert("Please upload at least one high-resolution product image asset.");
+      return;
+    }
+    if (!formSizes.trim()) {
+      alert("Please select at least one dimension parameter.");
       return;
     }
     setFormSubmitting(true);
@@ -242,7 +258,7 @@ export default function Admin() {
       material: formMaterial,
       priceINR: formPriceINR,
       priceUSD: formPriceUSD,
-      images: [formImgUrl], // Real Base64 list
+      images: imgs, // Real Base64 or Storage URL list (supports 3 images)
       sizes: formSizes.split(',').map(s => s.trim()).filter(Boolean),
       colors: formColors.split(',').map(c => c.trim()).filter(Boolean),
       stockStatus: formStockStatus,
@@ -268,6 +284,24 @@ export default function Admin() {
     } finally {
       setFormSubmitting(false);
     }
+  };
+
+  const isSizeSelected = (sz: string) => {
+    const selectedSizesArray = formSizes.split(',').map(s => s.trim().toLowerCase());
+    const normSz = sz.replace(/\s+/g, '').replace('ft', '').toLowerCase();
+    return selectedSizesArray.some(s => s.replace(/\s+/g, '').replace('ft', '').toLowerCase() === normSz);
+  };
+
+  const toggleSizeSelection = (sz: string) => {
+    const normTarget = sz.replace(/\s+/g, '').replace('ft', '').toLowerCase();
+    let currentArray = formSizes.split(',').map(s => s.trim()).filter(Boolean);
+    const existsIdx = currentArray.findIndex(s => s.replace(/\s+/g, '').replace('ft', '').toLowerCase() === normTarget);
+    if (existsIdx > -1) {
+      currentArray.splice(existsIdx, 1);
+    } else {
+      currentArray.push(sz);
+    }
+    setFormSizes(currentArray.join(', '));
   };
 
   // Save localized container-card edits in real-time
@@ -891,16 +925,75 @@ export default function Admin() {
                         </label>
                       </div>
 
-                      <div className="space-y-1.5 md:col-span-2">
-                        <label className="text-[10px] uppercase font-bold tracking-wider text-neutral-450 md:col-span-2 text-neutral-400">Available Dimensions (separate by comma)</label>
-                        <input 
-                          type="text" 
-                          value={formSizes} 
-                          onChange={(e) => setFormSizes(e.target.value)} 
-                          placeholder="E.g. 6x9 ft (180x270 cm), 8x10 ft (240x300 cm)" 
-                          required 
-                          className="w-full bg-white dark:bg-neutral-900 text-neutral-800 dark:text-stone-100 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 outline-none"
-                        />
+                      <div className="space-y-1.5 md:col-span-2 relative">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-neutral-450 md:col-span-2 text-neutral-400">Available Dimensions (Dropdown Selector)</label>
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setSizeDropdownOpen(!sizeDropdownOpen)}
+                            className="w-full bg-white dark:bg-neutral-900 text-neutral-800 dark:text-stone-100 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 outline-none text-left flex justify-between items-center cursor-pointer min-h-[46px] shadow-sm hover:border-[#C5A059]/40 transition"
+                          >
+                            <div className="flex flex-wrap gap-2 overflow-hidden">
+                              {formSizes.split(',').map(s => s.trim()).filter(Boolean).length === 0 ? (
+                                <span className="text-neutral-400 dark:text-neutral-500 text-xs">Choose dimensions...</span>
+                              ) : (
+                                formSizes.split(',').map(s => s.trim()).filter(Boolean).map((s, idx) => (
+                                  <span key={idx} className="bg-[#C5A059]/10 text-[#C5A059] dark:text-amber-300 border border-[#C5A059]/30 px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold flex items-center gap-1.5">
+                                    {s}
+                                    <span 
+                                      className="hover:text-red-500 cursor-pointer font-bold text-[10px] ml-1 select-none"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleSizeSelection(s);
+                                      }}
+                                    >
+                                      ×
+                                    </span>
+                                  </span>
+                                ))
+                              )}
+                            </div>
+                            <span className="text-neutral-400 font-sans text-xs ml-2">▼</span>
+                          </button>
+
+                          {sizeDropdownOpen && (
+                            <>
+                              <div 
+                                className="fixed inset-0 z-40" 
+                                onClick={() => setSizeDropdownOpen(false)} 
+                              />
+                              <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-900 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.15)] py-2 z-50 animate-fadeIn max-h-[250px] overflow-y-auto">
+                                <div className="px-3.5 py-1.5 text-[8.5px] uppercase font-bold text-neutral-450 dark:text-neutral-500 tracking-wider border-b border-neutral-100 dark:border-neutral-900 mb-1">
+                                  Select Standard Dimensions
+                                </div>
+                                {['4x6', '5x7', '5x8', '6x9', '8x10', '8x11'].map((sz) => {
+                                  const selected = isSizeSelected(sz);
+                                  return (
+                                    <button
+                                      key={sz}
+                                      type="button"
+                                      onClick={() => toggleSizeSelection(sz)}
+                                      className="w-full text-left px-4 py-2.5 hover:bg-neutral-100 dark:hover:bg-neutral-900/40 text-xs flex items-center justify-between transition-colors cursor-pointer"
+                                    >
+                                      <span className="font-mono text-neutral-800 dark:text-stone-300 font-bold">{sz} ft</span>
+                                      <div className="flex items-center gap-2">
+                                        {selected ? (
+                                          <span className="text-[10px] text-[#C5A059] font-bold">✓ Selected</span>
+                                        ) : (
+                                          <span className="text-[10px] text-neutral-400">Add</span>
+                                        )}
+                                        <div className={`w-4 h-4 rounded border flex items-center justify-center ${selected ? 'border-[#C5A059] bg-[#C5A059] text-white font-bold text-[10px]' : 'border-neutral-300 dark:border-neutral-700'}`}>
+                                          {selected && '✓'}
+                                        </div>
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        <p className="text-[9px] text-neutral-400 dark:text-neutral-500 italic mt-1">Select standard dimensions suitable for client room schematics.</p>
                       </div>
 
                       <div className="space-y-1.5 md:col-span-2">
@@ -915,13 +1008,50 @@ export default function Admin() {
                         />
                       </div>
 
-                      <div className="md:col-span-2 pt-2 pb-1">
-                        <ImageUpload 
-                          label="Carpet Curation Photography Asset"
-                          currentImage={formImgUrl}
-                          onImageUploaded={(b64) => setFormImgUrl(b64)}
-                          onClear={() => setFormImgUrl('')}
-                        />
+                      {/* TRIPLE IMAGE UPLOAD GRID FOR MULTIPLE IMAGES PER PRODUCT */}
+                      <div className="md:col-span-2 space-y-3 pt-2.5 pb-1">
+                        <div className="border-b border-neutral-200/55 dark:border-neutral-850 pb-1.5">
+                          <label className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 block font-semibold">Couture Photography Assets (Supports Exactly 3 Images)</label>
+                          <p className="text-[9px] text-neutral-450 dark:text-neutral-500 italic mt-0.5">Please upload exactly 3 premium shots (Cover view, Detail detail & Interior atmospheric showcase angle).</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                          <div>
+                            <ImageUpload 
+                              label="Image 1: Primary Cover Shot"
+                              currentImage={formImgUrl1 || formImgUrl}
+                              onImageUploaded={(b64) => {
+                                setFormImgUrl1(b64);
+                                if (!formImgUrl) setFormImgUrl(b64);
+                              }}
+                              onClear={() => {
+                                setFormImgUrl1('');
+                                if (formImgUrl === formImgUrl1) setFormImgUrl('');
+                              }}
+                            />
+                            <p className="text-[8.5px] text-neutral-450 dark:text-neutral-500 mt-1 italic text-center">Primary catalogue display.</p>
+                          </div>
+                          
+                          <div>
+                            <ImageUpload 
+                              label="Image 2: Close-up Detail"
+                              currentImage={formImgUrl2}
+                              onImageUploaded={(b64) => setFormImgUrl2(b64)}
+                              onClear={() => setFormImgUrl2('')}
+                            />
+                            <p className="text-[8.5px] text-neutral-450 dark:text-neutral-500 mt-1 italic text-center">Weave details view.</p>
+                          </div>
+                          
+                          <div>
+                            <ImageUpload 
+                              label="Image 3: Interior Atmospheric"
+                              currentImage={formImgUrl3}
+                              onImageUploaded={(b64) => setFormImgUrl3(b64)}
+                              onClear={() => setFormImgUrl3('')}
+                            />
+                            <p className="text-[8.5px] text-neutral-450 dark:text-neutral-500 mt-1 italic text-center">Atmospheric room layout.</p>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="space-y-1.5 md:col-span-2">
